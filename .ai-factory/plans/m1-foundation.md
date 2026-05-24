@@ -40,9 +40,9 @@
 
 ### Phase B: ESP32 firmware (3 задачи)
 
-- **B1 (Task #13)** — `firmware/epd_bridge.ino`: каркас Arduino (Serial 921600, SPI 10MHz, I²C 400kHz), диспетчер опкодов 0x01-0x0B по оригинальному описанию из исходного брифа. Ключевой фикс: 0x22=0xC7 для full, 0xCF для partial.
-- **B2 (Task #14)** ← B1 — добавить опкоды 0x0C `WRITE_LUT_DYNAMIC` (153 байта + refresh), 0x0D `WRITE_REGISTER` (произвольный регистр), 0x0E `BENCH_RUN` (LUT + image + N повторов + INA219 трасса).
-- **B3 (Task #15)** ← B2 — `firmware/README.md`: таблица опкодов с byte-layout, схема подключения (3 группы), инструкция по прошивке, заметка про «ключевой фикс», ссылка на референс waveshareteam/e-Paper.
+- [x] **B1 (Task #13)** — `firmware/epd_bridge.ino`: каркас Arduino (Serial 921600, SPI 10MHz, I²C 400kHz), диспетчер опкодов 0x01-0x0B по оригинальному описанию из исходного брифа. Ключевой фикс: 0x22=0xC7 для full, 0xCF для partial.
+- [x] **B2 (Task #14)** ← B1 — добавить опкоды 0x0C `WRITE_LUT_DYNAMIC` (153 байта + refresh), 0x0D `WRITE_REGISTER` (произвольный регистр), 0x0E `BENCH_RUN` (LUT + image + N повторов + INA219 трасса).
+- [x] **B3 (Task #15)** ← B2 — `firmware/README.md`: таблица опкодов с byte-layout, схема подключения (3 группы), инструкция по прошивке, заметка про «ключевой фикс», ссылка на референс waveshareteam/e-Paper.
 
 ### Phase C: Python пайплайн каркас (4 задачи)
 
