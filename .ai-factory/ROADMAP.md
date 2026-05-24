@@ -4,7 +4,7 @@
 
 ## Milestones
 
-- [ ] **M1. Foundation** — `.ai-factory/` + LaTeX-каркас по ГОСТ 7.32 (titlepage, разделы, ссылки, библиография через biblatex-gost); расширение прошивки ESP32 опкодом записи произвольного LUT через USB; прочитаны Васильев (гл. 1–5, 8 — методы оптимизации и теория экстремума), Понтрягин (гл. 1–3 — классический PMP), Phogat 2017 целиком (дискретный PMP). [Артефакт: `tex/thesis.tex` каркас, `firmware/epd_bridge.ino` обновлён, краткие заметки по прочитанному в `docs/notes/`.]
+- [x] **M1. Foundation** — `.ai-factory/` + LaTeX-каркас по ГОСТ 7.32 (titlepage, разделы, ссылки, библиография через biblatex-gost, PT Mono для кириллической моноширинки); прошивка ESP32 epd_bridge.ino с опкодами 0x01-0x0E (включая dynamic LUT и INA219 BENCH_RUN); Python-пакет (bridge/lut/ina219/metrics) с pytest suite (66 tests, coverage 92%); literature notes (Васильев, Понтрягин, Paruchuri-Chatterjee, Моисеев) + notation map + proof sketch главной теоремы. Закрыт 2026-05-25.
 
 - [ ] **M2. Literature review locked** — все Wiley/Elsevier статьи из «Pending downloads» получены и прочитаны; gap analysis vs Kang 2025 написан явно; INSIGHT collection дополнена до ≥15 пунктов; библиография в bibtex с ≥25 проверенными ссылками. [Артефакт: `tex/introduction.tex`, `tex/review.tex`, `docs/refs/bibliography.bib`.]
 
@@ -24,6 +24,7 @@
 
 | Milestone | Date |
 |-----------|------|
+| M1. Foundation | 2026-05-25 |
 
 ## Phase plan (target: ~20 weeks to October 2026)
 
