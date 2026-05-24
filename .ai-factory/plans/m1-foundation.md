@@ -46,10 +46,10 @@
 
 ### Phase C: Python пайплайн каркас (4 задачи)
 
-- **C1 (Task #16)** — `pyproject.toml` с deps (numpy/scipy/matplotlib/pyserial/scikit-image/jupyterlab/pytest/pytest-cov/pandas/tqdm), `scripts/setup_env.sh` для одношагового setup через `uv sync` (или venv+pip как fallback).
-- **C2 (Task #17)** ← C1 — `python/bridge.py`: класс `EpdBridge` с методами под каждый опкод, mock-friendly (принимает serial.Serial-like). Verbose logging.
-- **C3 (Task #18)** ← C1 — `python/lut.py` (encode/decode 153 байт по Section 6.7 SSD1680, charge_balance validate), `python/ina219.py` (parser BENCH_RUN трасс + trapezoidal energy), `python/metrics.py` (SSIM, residual через scikit-image). Pure functions, тестируемые.
-- **C4 (Task #19)** ← C2+C3 — `tests/test_*.py`: round-trip LUT, синтетический parser energy, SSIM identity, mock-bridge opcode tests. `pytest -v` зелёное, coverage ≥70%.
+- [x] **C1 (Task #16)** — `pyproject.toml` с deps (numpy/scipy/matplotlib/pyserial/scikit-image/jupyterlab/pytest/pytest-cov/pandas/tqdm), `scripts/setup_env.sh` для одношагового setup через `uv sync` (или venv+pip как fallback).
+- [x] **C2 (Task #17)** ← C1 — `python/bridge.py`: класс `EpdBridge` с методами под каждый опкод, mock-friendly (принимает serial.Serial-like). Verbose logging.
+- [x] **C3 (Task #18)** ← C1 — `python/lut.py` (encode/decode 153 байт по Section 6.7 SSD1680, charge_balance validate), `python/ina219.py` (parser BENCH_RUN трасс + trapezoidal energy), `python/metrics.py` (SSIM, residual через scikit-image). Pure functions, тестируемые.
+- [x] **C4 (Task #19)** ← C2+C3 — `tests/test_*.py`: round-trip LUT, синтетический parser energy, SSIM identity, mock-bridge opcode tests. `pytest -v` зелёное — 66 passed, coverage 92.38% (>>70%).
 
 ### Phase E: визуальный аппарат (1 задача, можно делать с A1)
 
