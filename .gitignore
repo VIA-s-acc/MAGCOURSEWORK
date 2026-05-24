@@ -1,0 +1,128 @@
+# AI-Factory: версионируем артефакты процесса (.ai-factory/), но не локальные claude-настройки.
+.claude/
+.ai-factory.json
+
+# Литература: PDF-файлы в docs/refs/ слишком тяжёлые и часто копирайт. Содержание описано в .ai-factory/RESEARCH.md.
+docs/refs/
+docs/inbox/
+
+# LaTeX временные
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+*.lb
+*.bcf
+*.run.xml
+*.bbl
+*.blg
+*.brf
+*.synctex.gz
+*.synctex.gz(busy)
+*.synctex(busy)
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.acn
+*.acr
+*.alg
+*.ist
+*.idx
+*.ind
+*.ilg
+*.lol
+*-blx.bib
+*-blx.aux
+*.run.xml
+_minted-*/
+auto/
+
+# Собранный PDF (генерируется из исходников)
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist-py/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+*.egg
+.installed.cfg
+MANIFEST
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+nosetests.xml
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+notebook/.ipynb_checkpoints/
+
+# uv lock — версионируется
+# (uv.lock НЕ игнорируем)
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Локальные данные экспериментов (большие CSV из стенда)
+data/*.csv
+data/*.parquet
+data/raw/
+data/calibration/raw/
+
+# Arduino build артефакты
+firmware/build/
+firmware/*.elf
+firmware/*.bin
+firmware/*.map

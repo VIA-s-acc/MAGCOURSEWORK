@@ -1,0 +1,190 @@
+% ============================================================================
+%  Курсовая работа магистра 1 курса ВМК МГУ
+%  Тема: «Оптимизация обновления электрофоретического дисплея»
+%  Компилируется через XeLaTeX (для нормальной кириллицы и fontspec).
+%  Сборка: `make build` (см. Makefile) или
+%          xelatex -interaction=nonstopmode -output-directory=dist thesis.tex
+%          biber -output-directory dist dist/thesis
+%          xelatex -interaction=nonstopmode -output-directory=dist thesis.tex
+%          xelatex -interaction=nonstopmode -output-directory=dist thesis.tex
+% ============================================================================
+
+\documentclass[14pt,a4paper,oneside]{extreport}
+
+% ---- 1. Кодировки, языки, шрифты ------------------------------------------
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+% PT Mono — отечественный моноширинный шрифт с полной кириллической поддержкой,
+% поставляется с macOS «из коробки». На Linux обычно есть в пакете fonts-paratype;
+% на Windows — fallback на Consolas через \newfontfamily{\cyrillicfonttt}{Consolas}.
+\setmonofont{PT Mono}[Scale=0.95]
+\newfontfamily{\cyrillicfonttt}{PT Mono}[Scale=0.95]
+
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\setotherlanguage{english}
+
+% ---- 2. Геометрия страницы (ГОСТ 7.32-2017: 30/15/20/20 мм) ---------------
+\usepackage[a4paper,
+            left=30mm, right=15mm,
+            top=20mm, bottom=20mm,
+            footskip=10mm]{geometry}
+
+% Полуторный интервал
+\usepackage{setspace}
+\onehalfspacing
+
+% Абзацный отступ — 1.25 см, без вертикальных пропусков между абзацами
+\usepackage{indentfirst}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{0pt}
+
+% ---- 3. Математика ---------------------------------------------------------
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+
+% Теоремные окружения (по ГОСТ — сквозная нумерация по главам)
+\theoremstyle{plain}
+\newtheorem{theorem}{Теорема}[chapter]
+\newtheorem{lemma}[theorem]{Лемма}
+\newtheorem{corollary}[theorem]{Следствие}
+\newtheorem{proposition}[theorem]{Утверждение}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}[chapter]
+\newtheorem{example}{Пример}[chapter]
+\newtheorem{remark}{Замечание}[chapter]
+
+\renewcommand{\proofname}{Доказательство}
+
+% ---- 4. Графика, таблицы, плавающие объекты -------------------------------
+\usepackage{graphicx}
+\graphicspath{{figures/}{figures/diagrams/}{figures/plots/}{figures/raw_photos/}{figures/screenshots/}}
+
+\usepackage{float}
+\usepackage{caption}
+% ГОСТ: подпись "Рисунок N — Название" под рисунком, "Таблица N — Название" над таблицей
+\captionsetup[figure]{name=Рисунок,labelsep=endash,format=plain,justification=centering,singlelinecheck=false}
+\captionsetup[table]{name=Таблица,labelsep=endash,format=plain,justification=raggedright,singlelinecheck=false,position=above}
+
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+
+% ---- 5. Листинги кода ------------------------------------------------------
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    columns=fullflexible,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray!60},
+    keywordstyle=\color{blue!70!black},
+    commentstyle=\color{green!50!black}\itshape,
+    stringstyle=\color{red!60!black},
+    showstringspaces=false,
+    captionpos=b,
+}
+\renewcommand{\lstlistingname}{Листинг}
+
+\usepackage{xcolor}
+
+% ---- 6. Гиперссылки --------------------------------------------------------
+\usepackage[unicode]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,        % внутренние ссылки чёрные (по ГОСТу)
+    citecolor=black,
+    urlcolor=blue!50!black,
+    pdftitle={Оптимизация обновления электрофоретического дисплея},
+    pdfauthor={Ахроян Г. (ВМК МГУ)},
+    pdflang={ru-RU},
+}
+
+% ---- 7. Библиография (ГОСТ Р 7.0.5-2008 через biblatex-gost) --------------
+\usepackage[backend=biber,
+            style=gost-numeric,
+            sorting=none,
+            language=auto,
+            autolang=other,
+            babel=other,
+            maxbibnames=10,
+            minbibnames=10]{biblatex}
+\addbibresource{bib/bibliography.bib}
+
+% ---- 8. Заголовки разделов (ГОСТ-стиль) ------------------------------------
+\usepackage{titlesec}
+% Глава: 14pt, по центру, прописные, жирный
+\titleformat{\chapter}[block]
+  {\normalfont\large\bfseries\centering}
+  {\thechapter}{1em}{\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{0pt}{1.5em}
+
+% Section: 14pt, слева, обычный регистр
+\titleformat{\section}[block]
+  {\normalfont\normalsize\bfseries}
+  {\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{1em}{0.5em}
+
+\titleformat{\subsection}[block]
+  {\normalfont\normalsize\bfseries\itshape}
+  {\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{0.5em}{0.25em}
+
+% ---- 9. Оглавление --------------------------------------------------------
+\renewcommand{\contentsname}{Оглавление}
+\usepackage{tocloft}
+
+% ---- 10. Прочее ------------------------------------------------------------
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+
+\usepackage{microtype}
+
+% Команда для подписи рисунка по ГОСТ (если нужна вручную)
+\newcommand{\gostfigure}[3]{%
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=#2]{#1}
+        \caption{#3}\label{fig:#1}
+    \end{figure}
+}
+
+% ============================================================================
+%                                ДОКУМЕНТ
+% ============================================================================
+
+\begin{document}
+
+% --- Титульный лист ---
+\include{chapters/00_titlepage}
+
+% --- Оглавление ---
+\tableofcontents
+\clearpage
+
+% --- Основные главы ---
+\include{chapters/01_introduction}
+\include{chapters/02_review}
+\include{chapters/03_model}
+\include{chapters/04_theorem}
+\include{chapters/05_algorithm}
+\include{chapters/06_simulation}
+\include{chapters/07_experiment}
+\include{chapters/08_conclusion}
+
+% --- Список литературы ---
+% На этапе скелета (M1) включаем все источники из bib через \nocite{*},
+% чтобы валидировать работу biblatex-gost. На M2 при наполнении глав
+% эту строку нужно удалить — список будет формироваться только из \cite-вых.
+\nocite{*}
+\printbibliography[heading=bibintoc,title={Список литературы}]
+
+% --- Приложения ---
+\appendix
+\include{chapters/09_appendices}
+
+\end{document}
