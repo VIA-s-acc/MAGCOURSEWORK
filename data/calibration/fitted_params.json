@@ -1,0 +1,146 @@
+{
+  "calibration_source": "sweep_20260525_1923.csv",
+  "calibration_session_id": "20260525T192304",
+  "n_runs": 8,
+  "per_voltage": {
+    "VSH1": {
+      "v_nominal_volts": 15.0,
+      "avg_energy_per_repeat_mj": 1.6273870249999995,
+      "avg_peak_current_ma": 1.2000000000000002,
+      "avg_mean_current_ma": 0.8430150000000001,
+      "avg_power_mw": 4.0657,
+      "peak_to_mean_ratio": 1.4234622159748047
+    },
+    "VSH2": {
+      "v_nominal_volts": 5.0,
+      "avg_energy_per_repeat_mj": 1.5101429000000004,
+      "avg_peak_current_ma": 1.0750000000000002,
+      "avg_mean_current_ma": 0.7385950000000001,
+      "avg_power_mw": 3.7710000000000004,
+      "peak_to_mean_ratio": 1.4554661214874187
+    }
+  },
+  "model_params": {
+    "mu_star_m_per_Vs": 1e-09,
+    "tau_stokes_ms": 60.0,
+    "rho_min": 0.07,
+    "rho_max": 0.4,
+    "L_caps_um": 40.0,
+    "c_effective_pF": 11733.333333333332,
+    "source": "mu_star, tau_stokes, rho_min/max — из литературы (Wang 2022, He 2020); c_effective — фит по данным стенда"
+  },
+  "raw_run_stats": [
+    {
+      "v_name": "VSH1",
+      "v_code": 1,
+      "v_nominal_volts": 15.0,
+      "tp_frames": 5,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4010.642,
+      "energy_total_mj": 17.186541000000005,
+      "energy_per_repeat_mj": 1.7186541000000006,
+      "peak_i_ma": 1.3000000000000005,
+      "avg_i_ma": 0.9228400000000001,
+      "avg_power_mw": 4.2916
+    },
+    {
+      "v_name": "VSH1",
+      "v_code": 1,
+      "v_nominal_volts": 15.0,
+      "tp_frames": 10,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4007.0169999999994,
+      "energy_total_mj": 16.391456999999992,
+      "energy_per_repeat_mj": 1.6391456999999992,
+      "peak_i_ma": 1.2000000000000002,
+      "avg_i_ma": 0.8550400000000001,
+      "avg_power_mw": 4.0964
+    },
+    {
+      "v_name": "VSH1",
+      "v_code": 1,
+      "v_nominal_volts": 15.0,
+      "tp_frames": 20,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4010.4959999999996,
+      "energy_total_mj": 16.11582099999999,
+      "energy_per_repeat_mj": 1.611582099999999,
+      "peak_i_ma": 1.2000000000000002,
+      "avg_i_ma": 0.8240400000000001,
+      "avg_power_mw": 4.026
+    },
+    {
+      "v_name": "VSH1",
+      "v_code": 1,
+      "v_nominal_volts": 15.0,
+      "tp_frames": 50,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4006.892,
+      "energy_total_mj": 15.401661999999998,
+      "energy_per_repeat_mj": 1.5401661999999998,
+      "peak_i_ma": 1.1,
+      "avg_i_ma": 0.7701400000000002,
+      "avg_power_mw": 3.8488
+    },
+    {
+      "v_name": "VSH2",
+      "v_code": 3,
+      "v_nominal_volts": 5.0,
+      "tp_frames": 5,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4010.3590000000004,
+      "energy_total_mj": 15.921763000000013,
+      "energy_per_repeat_mj": 1.5921763000000013,
+      "peak_i_ma": 1.1,
+      "avg_i_ma": 0.8015800000000001,
+      "avg_power_mw": 3.9776
+    },
+    {
+      "v_name": "VSH2",
+      "v_code": 3,
+      "v_nominal_volts": 5.0,
+      "tp_frames": 10,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4006.8779999999997,
+      "energy_total_mj": 15.181187999999999,
+      "energy_per_repeat_mj": 1.5181187999999999,
+      "peak_i_ma": 1.1,
+      "avg_i_ma": 0.7491000000000001,
+      "avg_power_mw": 3.7936
+    },
+    {
+      "v_name": "VSH2",
+      "v_code": 3,
+      "v_nominal_volts": 5.0,
+      "tp_frames": 20,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4014.028,
+      "energy_total_mj": 14.814333000000008,
+      "energy_per_repeat_mj": 1.4814333000000008,
+      "peak_i_ma": 1.1,
+      "avg_i_ma": 0.71618,
+      "avg_power_mw": 3.6956
+    },
+    {
+      "v_name": "VSH2",
+      "v_code": 3,
+      "v_nominal_volts": 5.0,
+      "tp_frames": 50,
+      "n_repeats": 10,
+      "n_samples": 5000,
+      "duration_ms": 4011.152,
+      "energy_total_mj": 14.488431999999998,
+      "energy_per_repeat_mj": 1.4488431999999998,
+      "peak_i_ma": 1.0,
+      "avg_i_ma": 0.68752,
+      "avg_power_mw": 3.6172
+    }
+  ]
+}

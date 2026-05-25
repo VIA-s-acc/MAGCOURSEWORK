@@ -44,12 +44,12 @@
 ### Phase C: калибровочный эксперимент (3 задачи)
 
 - [x] **C1 (Task #43)** ← B2 — `scripts/calibration_sweep.py` готов (240 строк). Sweep по 2 V × 4 TP × 10 repeats = 80 циклов BENCH_RUN. Оффлайн-проверка LUT прошла. CLI с argparse, CSV + meta.json output, configurable pattern.
-- [ ] **C2 (Task #44)** ← C1 — **⏸ КРИТИЧЕСКАЯ PAUSE.** Пользователь запускает sweep на подключенном ESP32 (~5-10 мин), присылает CSV.
-- [ ] **C3 (Task #45)** ← C2 — `notebook/01_calibration.ipynb` с обработкой CSV, фитингом Стокса, экстракцией параметров, plots в PDF.
+- [x] **C2 (Task #44)** ← C1 — Sweep отработал успешно: 8 runs × 5000 samples = 40000 строк CSV (`data/calibration/sweep_20260525_1923.csv`, 2.3 MB). Total time 40 с. Все runs дали ожидаемые VSH1/VSH2 контрасты.
+- [x] **C3 (Task #45)** ← C2 — `scripts/process_calibration.py` (главная логика) + `notebook/01_calibration.ipynb` (тонкий wrapper). Сгенерированы `data/calibration/fitted_params.json` + `tex/figures/plots/03_calibration_{traces,summary}.pdf`. Извлечённые числа: VSH1 → E=1.63мДж, P=4.07мВт, I_peak=1.20мА; VSH2 → E=1.51мДж, P=3.77мВт; C_eff≈11.7нФ.
 
 ### Phase D: § 3.5 + review (2 задачи)
 
-- [ ] **D1 (Task #46)** ← B1 + C3 — Добавить § 3.5 (Калибровка) с Таблицей 3.1 и Рисунком 3.3.
+- [x] **D1 (Task #46)** ← B1 + C3 — § 3.5 написан (~4 стр PDF): экспериментальная установка, протокол sweep'а, извлечение характеристик (E_tot, P_avg, I_peak с 95-м перцентилем), оценка C_eff через формулу Lin 2024, Таблица 3.1 с 10 строками реальных параметров, два рисунка (calibration_traces и calibration_summary), сопоставление с литературой, явные 3 границы применимости модели. PDF 39 стр.
 - [ ] **D2 (Task #47)** ← D1 — **⏸ PAUSE** для review draft полной главы 3.
 
 ### Phase E: финализация (1 задача)
