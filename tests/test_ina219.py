@@ -16,13 +16,17 @@ from python.ina219 import (
 
 
 def _make_bench_payload(samples: list[tuple[int, int, int]]) -> bytes:
-    """Собрать BENCH_RUN payload (без status): n_samples + samples big-endian."""
+    """Собрать BENCH_RUN payload (без status): n_samples big-endian + samples little-endian.
+
+    Соответствует тому, как firmware реально пишет:
+    - n_samples — через явные shift'ы (big-endian);
+    - sample bytes — через raw memcpy из packed struct (little-endian, native ESP32).
+    """
     n = len(samples)
-    fmt = ">H" + "IhH" * n
-    flat = [n]
+    payload = struct.pack(">H", n)
     for t_us, i_raw, p_raw in samples:
-        flat.extend([t_us, i_raw, p_raw])
-    return struct.pack(fmt, *flat)
+        payload += struct.pack("<IhH", t_us, i_raw, p_raw)
+    return payload
 
 
 def test_parse_bench_empty():

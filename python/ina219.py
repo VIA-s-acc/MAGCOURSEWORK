@@ -74,7 +74,12 @@ def parse_bench_response(raw: bytes) -> Trace:
 
     Ожидаемый формат:
         [n_samples:u16_be][sample₀:8B][sample₁:8B]...
-    где sample = ``{t_us:u32_be, i_raw:i16_be, p_raw:u16_be}``.
+    где:
+    - ``n_samples`` — **big-endian** (firmware пишет явными shift'ами);
+    - sample = ``{t_us:u32_le, i_raw:i16_le, p_raw:u16_le}`` —
+      **little-endian** (firmware делает raw memcpy через
+      ``Serial.write((uint8_t*)bench_buf, ...)``, что копирует
+      packed struct в native порядке ESP32 = little-endian).
 
     Параметр ``raw`` — байты НАЧИНАЯ С n_samples (status уже отрезан caller'ом).
     """
@@ -89,8 +94,8 @@ def parse_bench_response(raw: bytes) -> Trace:
         )
 
     payload = raw[2 : 2 + n_samples * SAMPLE_SIZE]
-    # Один блочный unpack — быстрее чем циклом.
-    fmt = ">" + "IhH" * n_samples
+    # Один блочный unpack — быстрее чем циклом. Little-endian — см. docstring.
+    fmt = "<" + "IhH" * n_samples
     flat = struct.unpack(fmt, payload)
 
     t_us  = np.array(flat[0::3], dtype=np.uint32)

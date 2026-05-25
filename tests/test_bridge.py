@@ -222,7 +222,8 @@ def test_bench_run_sends_correct_payload_and_parses_response():
     n_repeats = 3
 
     # ответ: status + n_samples=2 + 2×8 байт samples
-    samples_raw = struct.pack(">IhH", 1000, 50, 10) + struct.pack(">IhH", 2000, 60, 12)
+    # samples — little-endian (raw memcpy из packed struct ESP32, см. parse_bench_response)
+    samples_raw = struct.pack("<IhH", 1000, 50, 10) + struct.pack("<IhH", 2000, 60, 12)
     rx = _status_ok_bytes() + struct.pack(">H", 2) + samples_raw
 
     bridge, mock = _make_bridge(rx)

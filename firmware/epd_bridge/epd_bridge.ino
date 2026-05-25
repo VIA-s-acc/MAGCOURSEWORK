@@ -105,8 +105,9 @@ constexpr uint16_t STATUS_INA_NACK       = 0xFF04;
 constexpr uint32_t SERIAL_BAUD           = 921600UL;
 constexpr uint32_t SPI_FREQ              = 10000000UL;   // 10 МГц
 constexpr uint32_t BUSY_TIMEOUT_MS       = 10000UL;      // 10 c — full refresh может быть долгим
-constexpr uint32_t RX_TIMEOUT_MS         = 2000UL;
+constexpr uint32_t RX_TIMEOUT_MS         = 5000UL;       // 5 с — с запасом для 4154 байт BENCH_RUN payload
 constexpr uint32_t I2C_FREQ              = 400000UL;     // 400 кГц fast mode
+constexpr size_t   SERIAL_RX_BUFFER      = 8192;         // 8 KB — вмещает BENCH_RUN payload (4154 B) с запасом
 
 // ---- Версия прошивки ------------------------------------------------------
 constexpr uint16_t FW_VERSION            = 0x0101;       // major=1, minor=01
@@ -389,19 +390,13 @@ void send_status(uint16_t status) {
     Serial.flush();
 }
 
-// Blocking read of n bytes with timeout. Returns false on timeout.
-bool read_bytes(uint8_t* buf, size_t n, uint32_t timeout_ms = RX_TIMEOUT_MS) {
-    uint32_t t0 = millis();
-    size_t got = 0;
-    while (got < n) {
-        if (Serial.available()) {
-            buf[got++] = (uint8_t)Serial.read();
-            t0 = millis();  // reset timeout on activity
-        } else if (millis() - t0 > timeout_ms) {
-            return false;
-        }
-    }
-    return true;
+// Blocking read of n bytes. Используем встроенный Serial.readBytes(), который
+// надёжнее ручного цикла на больших объёмах и автоматически блокируется до
+// получения всех байт или истечения Serial.setTimeout() (выставлен в setup()).
+// Возвращает false, если не удалось получить все n байт за timeout.
+bool read_bytes(uint8_t* buf, size_t n) {
+    size_t got = Serial.readBytes(buf, n);
+    return got == n;
 }
 
 // Static frame buffer — 4000 байт, alloc один раз в .bss.
@@ -601,7 +596,13 @@ void dispatch(uint8_t opcode) {
 // ===========================================================================
 
 void setup() {
+    // КРИТИЧНО: увеличиваем RX-буфер ДО Serial.begin() — иначе ESP32 теряет байты
+    // при больших передачах (FRAME=4000B, BENCH_RUN=4154B) на 921600 бод.
+    // Дефолтный буфер 256 байт → loss на больших frame'ах → TIMEOUT_RX на хост-стороне.
+    Serial.setRxBufferSize(SERIAL_RX_BUFFER);
     Serial.begin(SERIAL_BAUD);
+    Serial.setTimeout(RX_TIMEOUT_MS);  // используется в read_bytes() через Serial.readBytes()
+
     // Запасной канал логов: Serial2 (UART2 = GPIO16/17 — НО они заняты под RST/DC!)
     // Поэтому DBG() в production должен оставаться выключенным.
 
