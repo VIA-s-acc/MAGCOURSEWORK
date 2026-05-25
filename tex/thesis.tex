@@ -81,6 +81,16 @@
 \usepackage{multirow}
 \usepackage{tabularx}      % таблицы с авто-шириной колонок
 \usepackage{placeins}      % \FloatBarrier для жёсткого размещения figures
+
+% Float-параметры: разрешаем больше материала на странице, чтобы
+% избежать pile-up'а из-за слишком ограниченных дефолтов LaTeX.
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.15}
+\renewcommand{\floatpagefraction}{0.7}
+\setcounter{topnumber}{4}
+\setcounter{bottomnumber}{4}
+\setcounter{totalnumber}{6}
 \usepackage{tikz}          % векторные диаграммы прямо в .tex
 \usetikzlibrary{positioning, arrows.meta, decorations.pathreplacing, calc, shapes.geometric, patterns}
 

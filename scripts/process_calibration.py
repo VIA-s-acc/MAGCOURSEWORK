@@ -174,8 +174,12 @@ def fit_effective_params(stats: list[RunStats]) -> dict:
 
 
 def plot_traces(df: pd.DataFrame, meta: dict, output_pdf: Path) -> None:
-    """Overlay I(t) для всех runs (фигура 3.3 в § 3.5)."""
-    fig, axes = plt.subplots(2, 4, figsize=(14, 6), sharey=True)
+    """Overlay I(t) для всех runs (фигура 3.3 в § 3.5).
+
+    Компактная высота figsize=(12, 4), чтобы фигура вместе с таблицей и
+    summary-plot влезала на одну страницу LaTeX (избегаем pile-up float'ов).
+    """
+    fig, axes = plt.subplots(2, 4, figsize=(12, 3.6), sharey=True)
     sources = [s["name"] for s in meta["sources"]]
     tp_list = meta["tp_list"]
 
@@ -205,7 +209,7 @@ def plot_traces(df: pd.DataFrame, meta: dict, output_pdf: Path) -> None:
 
 def plot_summary(stats: list[RunStats], output_pdf: Path) -> None:
     """Bar chart: energy_per_repeat, peak_I, avg_I по (V, TP) — фигура 3.3b."""
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+    fig, axes = plt.subplots(1, 3, figsize=(12, 2.8))
 
     df_stats = pd.DataFrame([asdict(s) for s in stats])
 
