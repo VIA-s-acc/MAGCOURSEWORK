@@ -31,8 +31,8 @@
 
 ### Phase A: чтение и заметки по литературе (2 задачи)
 
-- [ ] **A1 (Task #25)** — Извлечь text через `pdftotext` из 12 скачанных PDF (yang2021, wang2022, he2020, kang2025, lai2026, lin2024, zhong2026, comiskey1998_nature, deb2002_nsga2 + paruchuri уже есть). Сохранить в `/tmp/<bibkey>.txt` для последующего быстрого grep'а в задачах A2-B3.
-- [ ] **A2 (Task #26)** ← A1 — Создать `docs/notes/<bibkey>.md` для ≥8 ключевых статей в формате (Bib info / Метод / Ключевые формулы / Numerical results / Связь с курсовой / Главы цитирования). Приоритет: kang2025 → lai2026 → zhong2026 → yang2021 → wang2022 → he2020 → lin2024 → comiskey1998.
+- [x] **A1 (Task #25)** — Извлечь text через `pdftotext` из 10 PDF в /tmp/<bibkey>.txt (yang2021: 451 строк, wang2022: 485, he2020: 2431, kang2025: 495, lai2026: 442, lin2024: 1269, zhong2026: 628, comiskey1998_nature: 296, deb2002_nsga2: 847, paruchuri2019: 2185). Готово ~9500 строк суммарно для grep/чтения.
+- [x] **A2 (Task #26)** ← A1 — Создано 8 файлов `docs/notes/<bibkey>.md`: kang2025 (главный конкурент), lai2026 (energy baseline −35.7%), lin2024 (формула P_peak), he2020 (Stokes + phase splitting), wang2022 (red ghost + DC compliance), yang2021 (mechanisms + charge balance foundation), zhong2026 (обзор + наша taxonomy), comiskey1998 (foundational citation для Введения). Каждый — bib info + метод + формулы + результаты + связь с курсовой + главы цитирования.
 
 ### Phase B: глава 2 «Обзор» (4 задачи, outline → review → draft → review)
 
