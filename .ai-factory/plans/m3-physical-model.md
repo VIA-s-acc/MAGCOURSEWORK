@@ -43,7 +43,7 @@
 
 ### Phase C: калибровочный эксперимент (3 задачи)
 
-- [ ] **C1 (Task #43)** ← B2 — `scripts/calibration_sweep.py` для автоматического sweep на стенде (V × TP × n_repeats, ~30-50 точек).
+- [x] **C1 (Task #43)** ← B2 — `scripts/calibration_sweep.py` готов (240 строк). Sweep по 2 V × 4 TP × 10 repeats = 80 циклов BENCH_RUN. Оффлайн-проверка LUT прошла. CLI с argparse, CSV + meta.json output, configurable pattern.
 - [ ] **C2 (Task #44)** ← C1 — **⏸ КРИТИЧЕСКАЯ PAUSE.** Пользователь запускает sweep на подключенном ESP32 (~5-10 мин), присылает CSV.
 - [ ] **C3 (Task #45)** ← C2 — `notebook/01_calibration.ipynb` с обработкой CSV, фитингом Стокса, экстракцией параметров, plots в PDF.
 
