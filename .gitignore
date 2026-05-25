@@ -115,9 +115,12 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Локальные данные экспериментов (большие CSV из стенда)
-data/*.csv
-data/*.parquet
+# Локальные данные экспериментов (большие CSV/sweep'ы из стенда —
+# легко регенерируются по запуску calibration_sweep.py на физическом стенде).
+# При этом ОСТАВЛЯЕМ fitted_params.json и подобные processed artifacts.
+data/**/*.csv
+data/**/*.parquet
+data/**/*.meta.json
 data/raw/
 data/calibration/raw/
 
