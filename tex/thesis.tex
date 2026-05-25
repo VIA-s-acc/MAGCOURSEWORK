@@ -35,6 +35,13 @@
 \usepackage{setspace}
 \onehalfspacing
 
+% Чуть мягче переносы для русского, иначе длинные слова уходят за поля.
+\sloppy
+\hbadness=10000
+\hfuzz=8pt
+\tolerance=2000
+\emergencystretch=2em
+
 % Абзацный отступ — 1.25 см, без вертикальных пропусков между абзацами
 \usepackage{indentfirst}
 \setlength{\parindent}{1.25cm}

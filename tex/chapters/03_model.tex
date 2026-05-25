@@ -361,25 +361,45 @@ ray-tracing в микрокапсуле), но для целей оптимиз�
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[font=\small, node distance=1.2cm,
+    \begin{tikzpicture}[font=\small,
         every node/.style={align=center},
-        level/.style={draw, very thick, rounded corners, minimum width=4cm, minimum height=1.5cm, fill=#1!10},
+        level/.style={draw, very thick, rounded corners, minimum width=4.0cm, minimum height=1.4cm, fill=#1!10},
         arrow/.style={->, very thick, >=Stealth}]
 
-        \node[level=blue] (pde) {\textbf{PDE}\\континуальный\\Пуассон\,--\,Нернст\,--\,Планка};
-        \node[level=green, below=of pde] (ode) {\textbf{ODE}\\усреднённый\\1D, центр масс $\bar{x}(t)$};
-        \node[level=orange, below=of ode] (discrete) {\textbf{Discrete}\\дискретный\\LUT $\{(V_k, T_k)\}_{k=1}^{K}$};
+        % 3 уровня по центру
+        \node[level=blue]   (pde)      at (0,  4.0) {\textbf{PDE}\\континуальный};
+        \node[level=green]  (ode)      at (0,  1.0) {\textbf{ODE}\\усреднённый};
+        \node[level=orange] (discrete) at (0, -2.0) {\textbf{Discrete}\\дискретный};
 
-        \draw[arrow] (pde) -- node[right=0.3cm] {\textit{mean-field:}\\A1 (1D ось)\\A2 (lumped pos.)\\A3 (quasi-static $\varphi$)} (ode);
-        \draw[arrow] (ode) -- node[right=0.3cm] {\textit{дискретизация:}\\фазы waveform $T_k$,\\выбор $V_k \in \mathcal{U}$} (discrete);
+        % Стрелки между уровнями
+        \draw[arrow] (pde)  -- (ode);
+        \draw[arrow] (ode)  -- (discrete);
 
-        % Слева — что описывает каждый уровень
-        \node[left=0.4cm of pde, anchor=east, text width=4cm, font=\footnotesize\itshape]
-            {$\partial c_\pm/\partial t = \nabla\!\cdot(\ldots)$\\$-\nabla^2 \varphi = \rho_e/\varepsilon$\\граничные условия};
-        \node[left=0.4cm of ode, anchor=east, text width=4cm, font=\footnotesize\itshape]
-            {$\dot{\bar{x}} = \mu^* U(t) / L$\\reflectance $\rho(\bar{x})$};
-        \node[left=0.4cm of discrete, anchor=east, text width=4cm, font=\footnotesize\itshape]
-            {$\bar{x}[k{+}1] = F(\bar{x}[k], V_k T_k)$\\(глава~\ref{ch:theorem})};
+        % Подписи стрелок справа (с увеличенным отступом от коробок)
+        \node[right=2.0cm of pde, anchor=west, text width=5cm, font=\footnotesize\itshape] (lbl-pde-ode)
+            {\textbf{mean-field редукция:}\\
+             A1 — 1D ось симметрии\\
+             A2 — lumped position\\
+             A3 — quasi-static $\varphi$};
+        \draw[->, gray, thin] (lbl-pde-ode.west) to[bend right=10] ($(pde.east)!0.5!(ode.east) + (0.2, 0)$);
+
+        \node[right=2.0cm of ode, anchor=west, text width=5cm, font=\footnotesize\itshape] (lbl-ode-disc)
+            {\textbf{дискретизация по фазам:}\\
+             $U(t) \to \{(V_k, T_k)\}_{k=1}^{K}$,\\
+             $V_k \in \mathcal{U} = \{V_{\!SH1}, V_{\!SH2}, V_{\!SL}, V_{\!COM}, 0\}$};
+        \draw[->, gray, thin] (lbl-ode-disc.west) to[bend right=10] ($(ode.east)!0.5!(discrete.east) + (0.2, 0)$);
+
+        % Слева — формулы (тоже с увеличенным отступом)
+        \node[left=2.0cm of pde, anchor=east, text width=5cm, font=\footnotesize\itshape, align=right]
+            {$\partial c_\pm/\partial t = \nabla\!\cdot(\ldots)$\\
+             $-\nabla^2 \varphi = \rho_e/(\varepsilon_m\varepsilon_0)$\\
+             граничные условия};
+        \node[left=2.0cm of ode, anchor=east, text width=5cm, font=\footnotesize\itshape, align=right]
+            {$\dot{\bar{x}} = \mu^* \, U(t)/L$\\
+             $\rho(\bar{x})$ — reflectance};
+        \node[left=2.0cm of discrete, anchor=east, text width=5cm, font=\footnotesize\itshape, align=right]
+            {$\bar{x}[k{+}1] = F(\bar{x}[k], V_k, T_k)$\\
+             см. главу~\ref{ch:theorem}};
     \end{tikzpicture}
     \caption{Каскадная редукция модели: континуальная PDE-задача
         Пуассона\,--\,Нернста\,--\,Планка $\to$ усреднённая система ОДУ для
@@ -536,7 +556,7 @@ single-shot waveform отнесено к расширению экспериме
 Полученные значения для панели Waveshare~2.13''~V4 представлены в
 Таблице~\ref{tab:calib-results}.
 
-\begin{table}[H]
+\begin{table}[!htb]
     \caption{Калибровочные значения параметров модели обновления EPD\\
     (панель Waveshare~2.13''~V4, SSD1680, frame~white, $n_{\mathrm{rep}} = 10$)}
     \label{tab:calib-results}
