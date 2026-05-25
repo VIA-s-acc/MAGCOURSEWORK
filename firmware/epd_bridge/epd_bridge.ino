@@ -67,6 +67,16 @@ constexpr uint16_t INA219_CAL_VALUE   = 4096;
 constexpr float    INA219_I_LSB_A     = 0.0001f;   // 100 мкА
 constexpr float    INA219_P_LSB_W     = INA219_I_LSB_A * 20.0f;  // 2 мВт (POWER_LSB = 20×Current_LSB)
 
+// Возвращает: U_shunt[мВ], U_bus[В], I[мА], P[мВт] — упаковано в 8-байт ответ.
+// ВАЖНО: объявляется ЗДЕСЬ (до любой функции), потому что Arduino IDE
+// автогенерирует прототипы в начале файла и иначе не находит тип InaReadout.
+struct InaReadout {
+    int16_t  shunt_raw;     // LSB = 10 мкВ (signed)
+    uint16_t bus_raw;       // bits [15..3] = V_bus / 4 мВ (LSB 4mV)
+    int16_t  current_raw;   // LSB = INA219_I_LSB_A (signed)
+    uint16_t power_raw;     // LSB = INA219_P_LSB_W
+};
+
 // ---- Опкоды протокола -----------------------------------------------------
 constexpr uint8_t OP_INIT                = 0x01;
 constexpr uint8_t OP_FRAME               = 0x02;
@@ -359,14 +369,7 @@ bool ina219_init() {
     return true;
 }
 
-// Возвращает: U_shunt[мВ], U_bus[В], I[мА], P[мВт] — упаковано в 8-байт ответ.
-struct InaReadout {
-    int16_t  shunt_raw;     // LSB = 10 мкВ (signed)
-    uint16_t bus_raw;       // bits [15..3] = V_bus / 4 мВ (LSB 4mV)
-    int16_t  current_raw;   // LSB = INA219_I_LSB_A (signed)
-    uint16_t power_raw;     // LSB = INA219_P_LSB_W
-};
-
+// struct InaReadout определён выше (после INA219 constants).
 bool ina219_read_all(InaReadout* r) {
     uint16_t v;
     if (!ina219_read_reg(INA219_REG_SHUNT,   &v)) return false; r->shunt_raw   = (int16_t)v;
