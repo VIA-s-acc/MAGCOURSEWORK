@@ -26,10 +26,53 @@ Comiskey~и~соавторов в 1998~году~\cite{comiskey1998_nature}, в �
 
 \begin{figure}[H]
     \centering
-    \framebox[0.7\textwidth]{\rule{0pt}{4cm} Рисунок: AM-EPD architecture (TIKZ TODO)}
-    \caption{Архитектура активно-матричного EPD: микрокапсула, TFT-матрица backplane'а, общий верхний электрод.}
-    \label{fig:01_am_epd_arch}
+    \begin{tikzpicture}[font=\small, scale=1.0]
+        % Верхний прозрачный ITO электрод
+        \draw[fill=cyan!10, draw=cyan!60!black, thick]
+            (0, 2) rectangle (9, 2.4);
+        \node[right=0.1cm] at (9, 2.2) {ITO common electrode};
+
+        % Слой микрокапсул (3 капсулы)
+        \foreach \x in {1.5, 4.5, 7.5} {
+            \draw[fill=gray!5, draw=gray!50, thick] (\x, 1) circle (1.0);
+        }
+
+        % Частицы внутри: белые сверху, чёрные снизу
+        \foreach \x in {1.5, 4.5, 7.5} {
+            % белые частицы (T iO2) — наверху
+            \foreach \y/\xx in {1.6/0, 1.7/0.3, 1.5/-0.4, 1.6/-0.2} {
+                \draw[fill=white, draw=black, thin] (\x+\xx, \y) circle (0.10);
+            }
+            % чёрные частицы — внизу
+            \foreach \y/\xx in {0.6/0.1, 0.55/-0.3, 0.65/-0.05, 0.5/0.35} {
+                \draw[fill=black] (\x+\xx, \y) circle (0.10);
+            }
+        }
+
+        % Нижний электрод (TFT матрица — сегментированный)
+        \foreach \x in {0, 1.5, 3, 4.5, 6, 7.5} {
+            \draw[fill=yellow!20, draw=brown, thick]
+                (\x+0.1, -0.3) rectangle (\x+1.4, 0);
+        }
+        \node[below=0.1cm] at (4.5, -0.3) {TFT backplane (сегментированный)};
+
+        % Управляющее напряжение
+        \draw[<->, thick, gray] (-0.5, 0) -- (-0.5, 2.4)
+            node[midway, left] {\rotatebox{90}{$U(t)$}};
+
+        % Метки сторон
+        \node[above right] at (0, 2.4) {\small (+)};
+        \node[below right] at (0, -0.3) {\small (--)};
+    \end{tikzpicture}
+    \caption{Архитектура активно-матричного электрофоретического дисплея.
+        Сверху --- общий прозрачный ITO электрод, снизу --- сегментированная
+        TFT-матрица backplane'а. Между электродами --- слой микрокапсул с
+        белыми (TiO$_2$) и чёрными частицами противоположных зарядов.
+        Управляющее напряжение $U(t)$ задаёт направление электрофоретического
+        смещения частиц и тем самым видимое оптическое состояние пикселя.}
+    \label{fig:02_am_epd_arch}
 \end{figure}
+\FloatBarrier
 
 Ключевым физическим свойством EPD является \emph{бистабильность}: после снятия
 управляющего поля частицы сохраняют достигнутое положение в течение часов и

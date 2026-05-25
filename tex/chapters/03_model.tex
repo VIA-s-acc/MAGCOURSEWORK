@@ -34,6 +34,51 @@ $\varepsilon_m \approx 2$). В жидкости диспергированы п�
 «белым» и «чёрным» в зависимости от того, какие частицы оказываются у
 верхнего электрода.
 
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small, scale=1.0]
+        % Внешний контур микрокапсулы (круг)
+        \draw[fill=blue!5, draw=blue!50!black, thick] (0, 0) circle (3);
+        \node[above=0.1cm] at (0, 3) {Микрокапсула, $d_{\mathrm{caps}} \approx 40$~мкм};
+
+        % Верхний и нижний электроды (касательные плоскости)
+        \draw[ultra thick, cyan!60!black] (-3.2, 2.5) -- (3.2, 2.5);
+        \node[right=0.1cm] at (3.2, 2.5) {ITO (+)};
+        \draw[ultra thick, brown] (-3.2, -2.5) -- (3.2, -2.5);
+        \node[right=0.1cm] at (3.2, -2.5) {TFT (--)};
+
+        % Белые частицы (TiO2) — внутри, разбросаны
+        \foreach \x/\y in {-1.5/1.5, -0.8/1.0, 0.6/1.7, 1.5/1.2, -0.5/0.5, 1.1/0.3, 0.0/-0.4, -1.7/-0.6, 1.7/-1.2, 0.3/-1.5} {
+            \draw[fill=white, draw=black] (\x, \y) circle (0.18);
+            \node[font=\tiny] at (\x, \y) {$+$};
+        }
+
+        % Чёрные частицы
+        \foreach \x/\y in {-1.0/-1.5, 0.8/-1.7, 1.3/0.8, -1.8/0.8, 0.5/0.8, -0.2/1.4, 1.0/-0.9} {
+            \draw[fill=black] (\x, \y) circle (0.18);
+            \node[font=\tiny, color=white] at (\x, \y) {$-$};
+        }
+
+        % Стрелки сил
+        \draw[->, very thick, red!70!black] (-2.5, 0) -- (-2.5, 1.5);
+        \node[left] at (-2.5, 0.75) {$\vec{F}_E = q\vec{E}$};
+
+        \draw[->, thick, blue!70!black] (2.5, 0.8) -- (2.5, -0.2);
+        \node[right] at (2.5, 0.3) {$\vec{F}_{\!\text{Stokes}}$};
+
+        % Поле E
+        \node[font=\large] at (0, 2.1) {$\vec{E} \downarrow$};
+    \end{tikzpicture}
+    \caption{Сферическая микрокапсула электрофоретического дисплея с двумя
+        типами заряженных пигментных частиц (белые $\mathrm{TiO}_2$ ---
+        положительно заряженные, чёрные углеродные --- отрицательно
+        заряженные). Под действием электрического поля $\vec{E}$ на частицу
+        действуют электрическая сила $\vec{F}_E = q\vec{E}$ и противоположно
+        направленная сила сопротивления среды по закону Стокса
+        $\vec{F}_{\!\text{Stokes}} = -6\pi\eta R \vec{v}$.}
+    \label{fig:model-capsule}
+\end{figure}
+
 Движение частиц определяется балансом двух сил: электрической
 $\vec{F}_E = q\vec{E}$ и сопротивления среды, описываемого законом Стокса
 $\vec{F}_{\mathrm{drag}} = -6\pi\eta R\, \vec{v}$, где $\eta$ — динамическая
@@ -314,6 +359,38 @@ ray-tracing в микрокапсуле), но для целей оптимиз�
 точности $\sim 5\%$ это приближение признано достаточным в большинстве
 опубликованных работ \cite{he2020_particle_activation, lin2024_low_power}.
 
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small, node distance=1.2cm,
+        every node/.style={align=center},
+        level/.style={draw, very thick, rounded corners, minimum width=4cm, minimum height=1.5cm, fill=#1!10},
+        arrow/.style={->, very thick, >=Stealth}]
+
+        \node[level=blue] (pde) {\textbf{PDE}\\континуальный\\Пуассон\,--\,Нернст\,--\,Планка};
+        \node[level=green, below=of pde] (ode) {\textbf{ODE}\\усреднённый\\1D, центр масс $\bar{x}(t)$};
+        \node[level=orange, below=of ode] (discrete) {\textbf{Discrete}\\дискретный\\LUT $\{(V_k, T_k)\}_{k=1}^{K}$};
+
+        \draw[arrow] (pde) -- node[right=0.3cm] {\textit{mean-field:}\\A1 (1D ось)\\A2 (lumped pos.)\\A3 (quasi-static $\varphi$)} (ode);
+        \draw[arrow] (ode) -- node[right=0.3cm] {\textit{дискретизация:}\\фазы waveform $T_k$,\\выбор $V_k \in \mathcal{U}$} (discrete);
+
+        % Слева — что описывает каждый уровень
+        \node[left=0.4cm of pde, anchor=east, text width=4cm, font=\footnotesize\itshape]
+            {$\partial c_\pm/\partial t = \nabla\!\cdot(\ldots)$\\$-\nabla^2 \varphi = \rho_e/\varepsilon$\\граничные условия};
+        \node[left=0.4cm of ode, anchor=east, text width=4cm, font=\footnotesize\itshape]
+            {$\dot{\bar{x}} = \mu^* U(t) / L$\\reflectance $\rho(\bar{x})$};
+        \node[left=0.4cm of discrete, anchor=east, text width=4cm, font=\footnotesize\itshape]
+            {$\bar{x}[k{+}1] = F(\bar{x}[k], V_k T_k)$\\(глава~\ref{ch:theorem})};
+    \end{tikzpicture}
+    \caption{Каскадная редукция модели: континуальная PDE-задача
+        Пуассона\,--\,Нернста\,--\,Планка $\to$ усреднённая система ОДУ для
+        центра масс пигментных частиц одного пикселя $\to$ дискретная задача
+        оптимального управления над архитектурой LUT контроллера SSD1680.
+        Каждая стрелка снабжена явным набором допущений редукции (см. текст
+        раздела).}
+    \label{fig:model-reduction}
+\end{figure}
+\FloatBarrier
+
 
 \section{Стоксова форма для одной частицы}\label{sec:model-stokes}
 
@@ -464,7 +541,8 @@ single-shot waveform отнесено к расширению экспериме
     (панель Waveshare~2.13''~V4, SSD1680, frame~white, $n_{\mathrm{rep}} = 10$)}
     \label{tab:calib-results}
     \centering
-    \begin{tabular}{l c c l}
+    \small
+    \begin{tabularx}{\textwidth}{@{}p{4.5cm} c c X@{}}
         \toprule
         Параметр & Обозн. & Значение & Источник / комментарий \\
         \midrule
@@ -472,14 +550,14 @@ single-shot waveform отнесено к расширению экспериме
         Средняя мощность ($V_{\mathrm{SH1}}$)      & $\overline{P}$    & $4{,}07$~мВт & среднее по 4 значениям $T_P$ \\
         Пиковый ток ($V_{\mathrm{SH1}}$)            & $I_{\mathrm{peak}}$ & $1{,}20$~мА & 95-й перцентиль \\
         Энергия за обновление ($V_{\mathrm{SH2}}$) & $E_{\mathrm{ref}}$ & $1{,}51$~мДж & среднее по 4 значениям $T_P$ \\
-        Эффективная ёмкость пикселя                & $C^*$              & $\approx 11{,}7$~нФ & фит по $P_{\mathrm{peak}}$ \\
-        Подвижность                                & $\mu^*$            & $1 \cdot 10^{-9}$~м/(В$\cdot$с) & принято по \cite{wang2022_red_ghost} \\
+        Эффективная ёмкость пикселя                & $C^*$              & $11{,}7$~нФ & фит по $P_{\mathrm{peak}}$ \\
+        Подвижность                                & $\mu^*$            & $10^{-9}$~м/(В$\cdot$с) & принято по \cite{wang2022_red_ghost} \\
         Постоянная времени Стокса                  & $\tau^*$           & $60$~мс  & принято по \cite{he2020_particle_activation} \\
-        Reflectance (чёрное)                        & $\rho_{\min}$      & $0{,}07$ & \cite{yang2021_mechanisms}, datasheet \\
-        Reflectance (белое)                         & $\rho_{\max}$      & $0{,}40$ & \cite{yang2021_mechanisms}, datasheet \\
+        Reflectance чёрное                          & $\rho_{\min}$      & $0{,}07$ & \cite{yang2021_mechanisms} \\
+        Reflectance белое                           & $\rho_{\max}$      & $0{,}40$ & \cite{yang2021_mechanisms} \\
         Межэлектродная длина                        & $L$                & $40$~мкм & оценка для микрокапсул EPD \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
 Полные трассы тока для всех восьми калибровочных запусков представлены на
@@ -487,9 +565,9 @@ single-shot waveform отнесено к расширению экспериме
 средняя мощность) для каждой комбинации $(V, T_P)$ --- на
 Рисунке~\ref{fig:calib-summary}.
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\textwidth]{plots/03_calibration_traces.pdf}
+    \includegraphics[width=\textwidth]{plots/03_calibration_traces.pdf}
     \caption{Трассы потребляемого тока во время калибровочных запусков
         \texttt{BENCH\_RUN} для двух уровней source ($V_{\mathrm{SH1}}$,
         $V_{\mathrm{SH2}}$) и четырёх длительностей фазы $T_P$, измеренные
@@ -499,15 +577,16 @@ single-shot waveform отнесено к расширению экспериме
     \label{fig:calib-traces}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
-    \includegraphics[width=0.95\textwidth]{plots/03_calibration_summary.pdf}
+    \includegraphics[width=\textwidth]{plots/03_calibration_summary.pdf}
     \caption{Сводные метрики калибровочных запусков по комбинациям
         $(V, T_P)$: (слева)~энергия за один refresh, (по~центру)~пиковый ток
         ($95$\nobreakdash-й перцентиль), (справа)~средняя потребляемая
         мощность.}
     \label{fig:calib-summary}
 \end{figure}
+\FloatBarrier
 
 \subsection*{Сопоставление с литературой и обсуждение}
 

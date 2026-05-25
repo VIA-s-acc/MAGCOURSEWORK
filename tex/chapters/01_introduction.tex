@@ -32,6 +32,39 @@ ONYX~BOOX), электронные ценники в розничной торг
 существенно \emph{многокритериальной} задачей, не сводящейся к скаляризации с
 универсально приемлемыми весами.
 
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[font=\small,
+        cell/.style={draw, thick, rounded corners, fill=#1!15, minimum width=2.0cm, minimum height=1.0cm, align=center},
+        conf/.style={<->, very thick, red!70!black, dashed}]
+
+        % 4 угла квадрата — 4 цели
+        \node[cell=blue]   (E) at (-3.5,  1.8) {Энергия\\$E \to \min$};
+        \node[cell=green]  (G) at ( 3.5,  1.8) {Гостинг\\$G \to \min$};
+        \node[cell=orange] (T) at (-3.5, -1.8) {Скорость\\$\tau \to \min$};
+        \node[cell=purple] (L) at ( 3.5, -1.8) {Ресурс\\$L \to \max$};
+
+        % Конфликты между парами
+        \draw[conf] (E) -- (G);
+        \draw[conf] (E) -- (T);
+        \draw[conf] (E) -- (L);
+        \draw[conf] (G) -- (T);
+        \draw[conf] (G) -- (L);
+        \draw[conf] (T) -- (L);
+
+        % Центральная точка — компромисс
+        \node[fill=black, circle, inner sep=2pt, label={[font=\footnotesize]below:Парето-граница}]
+            at (0, 0) {};
+    \end{tikzpicture}
+    \caption{Четыре конфликтующие цели оптимизации обновления EPD: энергия
+        ($E$), гостинг ($G$), скорость обновления ($\tau$) и ресурс панели
+        ($L$). Парные пунктирные стрелки символизируют противоречия между
+        целями: например, ускорение обновления увеличивает гостинг, а
+        снижение энергопотребления увеличивает латентность. Компромиссное
+        решение лежит на Парето-границе в четырёхмерном пространстве целей.}
+    \label{fig:intro-opt-axes}
+\end{figure}
+
 К настоящему времени в литературе предложен ряд алгоритмических подходов к
 улучшению отдельных характеристик обновления EPD: алгоритмы снижения
 гостинга~\cite{wang2022_red_ghost}, ускорения отклика
