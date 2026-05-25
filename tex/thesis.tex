@@ -140,7 +140,10 @@
 
 % ---- 10. Прочее ------------------------------------------------------------
 \usepackage{enumitem}
-\setlist{nosep,leftmargin=*}
+% nosep — без вертикальных промежутков между пунктами.
+% leftmargin=\parindent выравнивает левый край маркера с абзацным отступом
+% основного текста (1.25см), чтобы списки визуально не торчали к левому полю.
+\setlist{nosep,leftmargin=\parindent,itemindent=0pt,labelsep=0.5em}
 
 \usepackage{microtype}
 
