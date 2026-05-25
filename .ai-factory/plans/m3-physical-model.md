@@ -32,14 +32,14 @@
 
 ### Phase A: outline главы 3 (2 задачи)
 
-- [ ] **A1 (Task #38)** — Outline в `docs/notes/03_model_outline.md` с 5 подразделами + visual budget (2-3 рис + 1 табл параметров).
-- [ ] **A2 (Task #39)** ← A1 — **⏸ PAUSE** для review структуры пользователем.
+- [x] **A1 (Task #38)** — Outline в `docs/notes/03_model_outline.md` с 5 подразделами (3.1 микрокапсула + DEP-замечание, 3.2 PDE Nernst-Planck + Poisson, 3.3 mean-field редукция с 3 допущениями, 3.4 Стоксова форма с явным выводом v_∞ и τ_Stokes, 3.5 калибровка с Таблицей 3.1). ~10-12 cite. Visual budget: 2-3 рис + 1 табл параметров.
+- [x] **A2 (Task #39)** ← A1 — Outline одобрен пользователем. Принято решение: **§ 3.2 расширен до полного вывода Nernst-Planck из первых принципов** (continuity + Stokes drag + Эйнштейн + Poisson) — для усиления математичности работы ВМК. Целевой объём § 3.2 увеличен 1.0 → 1.8 стр; глава 3 целиком ~6.5 стр.
 
 ### Phase B: теория + симулятор (3 задачи, B2+B3 параллельно с B1)
 
-- [ ] **B1 (Task #40)** ← A2 — Draft § 3.1-3.4 в `tex/chapters/03_model.tex` (~4-5 стр теории без калибровки).
-- [ ] **B2 (Task #41)** ← A2 — `python/ode_sim.py` с классом `PixelOdeSim` (scipy.integrate.solve_ivp).
-- [ ] **B3 (Task #42)** ← B2 — pytest на ODE-симулятор (terminal velocity, charge balance, LUT replay).
+- [x] **B1 (Task #40)** ← A2 — Draft § 3.1-3.4 в `tex/chapters/03_model.tex` написан (~9 стр PDF, включая полный вывод NP из первых принципов). § 3.5 — заглушка для D1. PDF 35 стр (+9 vs M2 финал).
+- [x] **B2 (Task #41)** ← A2 — `python/ode_sim.py` с классом `PixelOdeSim`. Поддержка overdamped (1st order) и full (2nd order) режимов. Методы: terminal_velocity, reflectance, simulate (LSODA), replay_lut (последовательность фаз). 175 строк.
+- [x] **B3 (Task #42)** ← B2 — `tests/test_ode_sim.py` готов: 21 тест (валидация конструктора, reflectance с clipping и vectorize, overdamped + full режимы, terminal velocity по экспоненте, charge-balanced returns origin, replay_lut со skip нулевых фаз). Coverage `python/ode_sim.py` = 98%. Полный suite: 87 passed, total coverage 93%.
 
 ### Phase C: калибровочный эксперимент (3 задачи)
 
