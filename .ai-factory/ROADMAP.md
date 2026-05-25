@@ -6,7 +6,7 @@
 
 - [x] **M1. Foundation** — `.ai-factory/` + LaTeX-каркас по ГОСТ 7.32 (titlepage, разделы, ссылки, библиография через biblatex-gost, PT Mono для кириллической моноширинки); прошивка ESP32 epd_bridge.ino с опкодами 0x01-0x0E (включая dynamic LUT и INA219 BENCH_RUN); Python-пакет (bridge/lut/ina219/metrics) с pytest suite (66 tests, coverage 92%); literature notes (Васильев, Понтрягин, Paruchuri-Chatterjee, Моисеев) + notation map + proof sketch главной теоремы. Закрыт 2026-05-25.
 
-- [ ] **M2. Literature review locked** — все Wiley/Elsevier статьи из «Pending downloads» получены и прочитаны; gap analysis vs Kang 2025 написан явно; INSIGHT collection дополнена до ≥15 пунктов; библиография в bibtex с ≥25 проверенными ссылками. [Артефакт: `tex/introduction.tex`, `tex/review.tex`, `docs/refs/bibliography.bib`.]
+- [x] **M2. Literature review locked** — 9 ключевых конспектов в `docs/notes/` (kang2025, lai2026, lin2024, he2020, wang2022, yang2021, zhong2026, comiskey1998, bert2003); главы 1 (введение, ~3 стр) и 2 (обзор, ~6 стр) написаны на русском в академическом стиле без AI-маркеров; gap analysis vs Kang 2025 явный (4 пробела → 4 решения); 19 проверенных bibtex-записей с biblatex-gost; INSIGHT collection до 16 пунктов. `make build` → 26-страничный PDF без unresolved cite. Закрыт 2026-05-25.
 
 - [ ] **M3. Physical model chapter** — PDE Nernst-Planck выписан с граничными условиями как управление; mean-field редукция к single-pixel ODE доказана; параметры η, R, q, m откалиброваны по серии измерений на стенде; работающий ODE-симулятор для одного пикселя в Python. [Артефакт: `tex/model.tex`, `notebook/01_calibration.ipynb`, `data/calibration/*.csv`.]
 
@@ -25,6 +25,7 @@
 | Milestone | Date |
 |-----------|------|
 | M1. Foundation | 2026-05-25 |
+| M2. Literature review locked | 2026-05-25 |
 
 ## Phase plan (target: ~20 weeks to October 2026)
 

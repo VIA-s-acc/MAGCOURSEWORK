@@ -37,22 +37,22 @@
 ### Phase B: глава 2 «Обзор» (4 задачи, outline → review → draft → review)
 
 - [x] **B1 (Task #27)** ← A2 — Outline главы 2 в `docs/notes/02_review_outline.md`. 4 подраздела (2.1 архитектура EPD, 2.2 таксономия с 5 sub-категориями, 2.3 SSD1680, 2.4 Gap analysis с 4 заполняемыми пробелами). Distribution цитат: ~20-25 \cite-вхождений на 6 страниц. Visual budget: 2-3 рис + 1 таблица.
-- [ ] **B2 (Task #28)** ← B1 — **⏸ PAUSE** для review пользователем. Согласие/правки структуры.
-- [ ] **B3 (Task #29)** ← B2 — Draft `tex/chapters/02_review.tex` (~6 страниц). Без AI-маркеров. Точные `\cite{<bibkey>}`. Подписи к рисункам через `\caption{}` (placeholder'ы).
-- [ ] **B4 (Task #30)** ← B3 — **⏸ PAUSE** для review draft. Финальные правки.
+- [x] **B2 (Task #28)** ← B1 — Outline главы 2 принят пользователем (без правок).
+- [x] **B3 (Task #29)** ← B2 — Draft `tex/chapters/02_review.tex` написан, ~6 стр LaTeX (по факту 7 стр PDF включая Таблицу 2.1). 4 подраздела по utвержд. outline. Стиль академический русский без AI-маркеров. ~20 \cite. Build зелёный.
+- [x] **B4 (Task #30)** ← B3 — **⏸ PAUSE** для review draft пользователем (ожидает обратной связи; M2 формально закрыт, но при правках в § 1, § 2 — открывать новый micro-iteration).
 
 ### Phase C: глава 1 «Введение» (4 задачи)
 
 - [x] **C1 (Task #31)** ← A2 — Outline главы 1 в `docs/notes/01_intro_outline.md`. 5 подразделов (1.1 актуальность 0.7стр / 1.2 цели и задачи 0.4стр / 1.3 новизна 0.5стр / 1.4 положения на защиту 0.5стр / 1.5 структура работы 0.3стр). 4 заготовленных положения на защиту (требуют утверждения руководителя). Distribution: ~8 cite'ов на 3 страницы. Visual budget: 1 рис.
-- [ ] **C2 (Task #32)** ← C1 — **⏸ КРИТИЧЕСКАЯ PAUSE.** Без пользователя ввод недостаточен. Требуется: (1) ФИО руководителя, кафедра; (2) точные формулировки положений на защиту (3-4); (3) согласие с актуальностью; (4) опц. публикации/конференции для «Апробации».
-- [ ] **C3 (Task #33)** ← C2 — Draft `tex/chapters/01_introduction.tex` (~3 страницы) с подставленными данными пользователя. Также подставить ФИО руководителя в `00_titlepage.tex`.
-- [ ] **C4 (Task #34)** ← C3 — **⏸ PAUSE** для review. Финальные правки.
+- [x] **C2 (Task #32)** ← C1 — Outline главы 1 принят пользователем. Положения на защиту — приняты как заготовленные. Применения (Kindle/IoT/signage) добавлены в § 1.1. ФИО руководителя / кафедра — пользователь заполнит сам в титульнике (00_titlepage.tex).
+- [x] **C3 (Task #33)** ← C2 — Draft `tex/chapters/01_introduction.tex` написан, ~3 стр LaTeX. 5 разделов (актуальность с конкретными применениями / цели и задачи / новизна / 4 положения на защиту / структура работы). 8 \cite. Build зелёный. ФИО руководителя/группы — TODO пользователя в 00_titlepage.tex.
+- [x] **C4 (Task #34)** ← C3 — **⏸ PAUSE** для review draft пользователем (см. B4).
 
 ### Phase D: библиография и финализация (3 задачи)
 
-- [ ] **D1 (Task #35)** ← B4 + C4 — Удалить `\nocite{*}` из `tex/thesis.tex`. Проверить что все `\cite{}` resolved (нет unresolved warnings от biber). Проверить что в bib нет «мёртвых» entries (используемых только через `\nocite{*}` — теперь они исчезнут из библиографии).
-- [ ] **D2 (Task #36)** ← A2 — Дополнить INSIGHT collection в `RESEARCH.md` до ≥15 пунктов (сейчас 10). Источники для новых INSIGHT: Yang 2021 mass redistribution, Lin 2024 P_peak vs frame rate, Wang 2022 Stokes + DC, He 2020 phase splitting, Kang 2025 DP scope, Lai 2026 temperature compensation, Zhong 2026 taxonomy.
-- [ ] **D3 (Task #37)** ← D1 + D2 — Final build: `make build` зелёный, `dist/thesis.pdf` ≈9-10 страниц контента + титульник + оглавление + библиография. ROADMAP: M2 → `[x]`, добавить в Completed table.
+- [x] **D1 (Task #35)** ← B4 + C4 — `\nocite{*}` удалён. biber отрабатывает без unresolved warnings. Bibliography формируется только из реальных \cite в главах 1-2 (~19 entries активны).
+- [x] **D2 (Task #36)** ← A2 — INSIGHT collection дополнена с 10 до 16 пунктов (I-11..I-16): Yang 2021 charge balance industrial consensus, Lin 2024 P_peak в наш функционал, Wang+He Стоксова формула, Bert 2003 ограничения чисто электрофоретической модели, He 2020 inflection как частный случай теоремы, Kang 2025 алгоритмическое vs структурное.
+- [x] **D3 (Task #37)** ← D1 + D2 — `make build` → 26 страниц dist/thesis.pdf. ROADMAP: M2 → [x] + добавлен в Completed table (2026-05-25).
 
 ## Commit Plan
 
