@@ -375,29 +375,29 @@ ray-tracing в микрокапсуле), но для целей оптимиз�
         \draw[arrow] (pde)  -- (ode);
         \draw[arrow] (ode)  -- (discrete);
 
-        % Подписи стрелок справа (с увеличенным отступом от коробок)
-        \node[right=2.0cm of pde, anchor=west, text width=5cm, font=\footnotesize\itshape] (lbl-pde-ode)
+        % Подписи стрелок справа (сжали: меньше отступ, уже text width)
+        \node[right=0.8cm of pde, anchor=west, text width=4.2cm, font=\footnotesize\itshape] (lbl-pde-ode)
             {\textbf{mean-field редукция:}\\
              A1 — 1D ось симметрии\\
              A2 — lumped position\\
              A3 — quasi-static $\varphi$};
         \draw[->, gray, thin] (lbl-pde-ode.west) to[bend right=10] ($(pde.east)!0.5!(ode.east) + (0.2, 0)$);
 
-        \node[right=2.0cm of ode, anchor=west, text width=5cm, font=\footnotesize\itshape] (lbl-ode-disc)
-            {\textbf{дискретизация по фазам:}\\
-             $U(t) \to \{(V_k, T_k)\}_{k=1}^{K}$,\\
-             $V_k \in \mathcal{U} = \{V_{\!SH1}, V_{\!SH2}, V_{\!SL}, V_{\!COM}, 0\}$};
+        \node[right=0.8cm of ode, anchor=west, text width=4.2cm, font=\footnotesize\itshape] (lbl-ode-disc)
+            {\textbf{дискретизация:}\\
+             $U(t) \to \{(V_k, T_k)\}_{k=1}^{K}$\\
+             $V_k \in \mathcal{U}$, $|\mathcal{U}| = 5$};
         \draw[->, gray, thin] (lbl-ode-disc.west) to[bend right=10] ($(ode.east)!0.5!(discrete.east) + (0.2, 0)$);
 
-        % Слева — формулы (тоже с увеличенным отступом)
-        \node[left=2.0cm of pde, anchor=east, text width=5cm, font=\footnotesize\itshape, align=right]
+        % Слева — формулы (так же сжато)
+        \node[left=0.8cm of pde, anchor=east, text width=4.2cm, font=\footnotesize\itshape, align=right]
             {$\partial c_\pm/\partial t = \nabla\!\cdot(\ldots)$\\
              $-\nabla^2 \varphi = \rho_e/(\varepsilon_m\varepsilon_0)$\\
              граничные условия};
-        \node[left=2.0cm of ode, anchor=east, text width=5cm, font=\footnotesize\itshape, align=right]
+        \node[left=0.8cm of ode, anchor=east, text width=4.2cm, font=\footnotesize\itshape, align=right]
             {$\dot{\bar{x}} = \mu^* \, U(t)/L$\\
              $\rho(\bar{x})$ — reflectance};
-        \node[left=2.0cm of discrete, anchor=east, text width=5cm, font=\footnotesize\itshape, align=right]
+        \node[left=0.8cm of discrete, anchor=east, text width=4.2cm, font=\footnotesize\itshape, align=right]
             {$\bar{x}[k{+}1] = F(\bar{x}[k], V_k, T_k)$\\
              см. главу~\ref{ch:theorem}};
     \end{tikzpicture}
