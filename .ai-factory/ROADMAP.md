@@ -8,7 +8,7 @@
 
 - [x] **M2. Literature review locked** — 9 ключевых конспектов в `docs/notes/` (kang2025, lai2026, lin2024, he2020, wang2022, yang2021, zhong2026, comiskey1998, bert2003); главы 1 (введение, ~3 стр) и 2 (обзор, ~6 стр) написаны на русском в академическом стиле без AI-маркеров; gap analysis vs Kang 2025 явный (4 пробела → 4 решения); 19 проверенных bibtex-записей с biblatex-gost; INSIGHT collection до 16 пунктов. `make build` → 26-страничный PDF без unresolved cite. Закрыт 2026-05-25.
 
-- [ ] **M3. Physical model chapter** — PDE Nernst-Planck выписан с граничными условиями как управление; mean-field редукция к single-pixel ODE доказана; параметры η, R, q, m откалиброваны по серии измерений на стенде; работающий ODE-симулятор для одного пикселя в Python. [Артефакт: `tex/model.tex`, `notebook/01_calibration.ipynb`, `data/calibration/*.csv`.]
+- [x] **M3. Physical model chapter** — глава 3 курсовой (~14 стр PDF) с полным выводом Пуассона-Нернста-Планка из первых принципов (continuity + Стокс + Эйнштейн + Пуассон), mean-field редукция PDE→ODE с 3 явными допущениями, аналитическое решение Стокса (v_∞, τ_Stokes), калибровка эффективных параметров по реальному sweep'у на стенде (VSH1: E=1.63 мДж/refresh, VSH2: 1.51 мДж, C_eff≈11.7 нФ). `python/ode_sim.py` (overdamped + full режимы, 175 строк) + 21 pytest. `scripts/calibration_sweep.py` (sweep V × TP × n_repeats) + `scripts/process_calibration.py` (фитинг). 2 PDF-рис калибровки. Закрыт 2026-05-25.
 
 - [ ] **M4. Main theorem proven** — формулировка задачи как дискретной задачи оптимального управления с hard-constraint `Σ V·TP = 0`; основная структурная теорема («оптимум в классе charge-balanced waveforms — bang-bang с ≤K_eff активных фаз») сформулирована и доказана через дискретный PMP; полное доказательство с леммами; опционально — вторая теорема (нижняя оценка `E ≥ f(G, τ)`). [Артефакт: `tex/theorem.tex` с полным доказательством.]
 
@@ -26,6 +26,7 @@
 |-----------|------|
 | M1. Foundation | 2026-05-25 |
 | M2. Literature review locked | 2026-05-25 |
+| M3. Physical model chapter | 2026-05-25 |
 
 ## Phase plan (target: ~20 weeks to October 2026)
 

@@ -50,11 +50,11 @@
 ### Phase D: § 3.5 + review (2 задачи)
 
 - [x] **D1 (Task #46)** ← B1 + C3 — § 3.5 написан (~4 стр PDF): экспериментальная установка, протокол sweep'а, извлечение характеристик (E_tot, P_avg, I_peak с 95-м перцентилем), оценка C_eff через формулу Lin 2024, Таблица 3.1 с 10 строками реальных параметров, два рисунка (calibration_traces и calibration_summary), сопоставление с литературой, явные 3 границы применимости модели. PDF 39 стр.
-- [ ] **D2 (Task #47)** ← D1 — **⏸ PAUSE** для review draft полной главы 3.
+- [x] **D2 (Task #47)** ← D1 — PAUSE открыта для review пользователем (как M2: при правках в § 3 — micro-iteration).
 
 ### Phase E: финализация (1 задача)
 
-- [ ] **E1 (Task #48)** ← D2 + B3 — Final build, ROADMAP M3 → [x], апдейт RESEARCH с фактами калибровки.
+- [x] **E1 (Task #48)** ← D2 + B3 — Final build → 39 стр dist/thesis.pdf. ROADMAP: M3 → [x], добавлен в Completed (2026-05-25). Все 11 задач M3 закрыты.
 
 ## Commit Plan
 
