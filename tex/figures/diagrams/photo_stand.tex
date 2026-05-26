@@ -1,0 +1,60 @@
+% TikZ-схема фотостанда для гл. 7 § 7.3
+% Включается через \input{figures/diagrams/photo_stand.tex}
+\begin{tikzpicture}[
+    every node/.style={font=\footnotesize},
+    box/.style={draw, thick, minimum width=70mm, minimum height=55mm, fill=gray!10},
+    led/.style={circle, draw, fill=yellow!60, minimum size=2.5mm, inner sep=0pt},
+    phone/.style={draw, thick, fill=white, rounded corners=1.5pt,
+                  minimum width=14mm, minimum height=22mm},
+    epd/.style={draw, thick, fill=white, minimum width=28mm, minimum height=10mm},
+    arr/.style={-{Stealth[length=2mm]}, thick},
+    label/.style={font=\scriptsize, align=left},
+]
+
+% Корпус коробки (вид сбоку, разрез)
+\node[box] (box) at (0, 0) {};
+% Чёрное матовое дно — заштрихованная нижняя полоса
+\fill[pattern=north east lines, pattern color=black!70] (-3.5, -2.75) rectangle (3.5, -2.45);
+\node[label] at (3.0, -2.6) [right] {чёрное\\матовое\\дно};
+
+% Чёрные стенки
+\draw[line width=1.5pt, black!80] (-3.5, -2.75) -- (-3.5, 2.75);
+\draw[line width=1.5pt, black!80] (3.5, -2.75)  -- (3.5, 2.75);
+
+% Верх открыт
+\node[label] at (0, 2.95) {\textbf{верх открыт} (отверстие для камеры)};
+
+% Телефон сверху, камерой вниз
+\node[phone] (phone) at (0, 1.5) {};
+\node[font=\scriptsize] at (0, 1.5) {iPhone};
+% Объектив (кружок снизу телефона)
+\filldraw[fill=black!40] (0, 0.45) circle (1.8mm);
+\node[font=\scriptsize] at (0.45, 0.5) [right] {объектив};
+
+% LED-кольцо вокруг объектива
+\foreach \ang in {0,30,...,330}{
+    \node[led] at ({0.65*cos(\ang)}, {0.45 + 0.65*sin(\ang)}) {};
+}
+\node[label] at (-1.4, 0.45) [left] {LED-кольцо};
+
+% Лучи света от LED под углом (диффузный, не вертикально)
+\foreach \x/\angle in {-0.6/-65, 0.6/-115}{
+    \draw[-{Stealth[length=1.5mm]}, dashed, gray, thick]
+        ({\x}, 0.0) -- ({\x*2.2}, -1.5);
+}
+
+% EPD-панель в центре дна, лицом вверх
+\node[epd] (epd) at (0, -2.25) {EPD (Waveshare 2.13"V4)};
+
+% Калибровочный квадрат (опц.)
+\filldraw[draw=black, fill=white] (1.95, -2.45) rectangle (2.45, -1.95);
+\node[label] at (2.65, -2.20) [right] {калиб.\\квадрат\\(опц.)};
+
+% Расстояние от объектива до EPD (вертикальная двусторонняя стрелка)
+\draw[<->, thick, red] (-2.2, 0.45) -- (-2.2, -2.20)
+    node[midway, left, label, text=red] {15--20\,см};
+
+% Подпись «вид сбоку, разрез»
+\node[label] at (0, -3.3) [font=\scriptsize\itshape] {вид сбоку (разрез коробки)};
+
+\end{tikzpicture}
