@@ -45,12 +45,12 @@
 
 ### Phase 0: Закрытие M4 (housekeeping, 1 задача)
 
-- [ ] **Z1** — Закрыть M4: завершить D1 (review pause неявно одобрен пользователем переходом к M5), выполнить E1 (`make build` + ROADMAP: M4 → [x] + строка `M4. Main theorem proven | 2026-05-26` в Completed table). Опц. INSIGHT в RESEARCH.md «процесс доказательства гл. 4: ε-релаксация разблокировала Theorem 4.2». Один commit: `chore(M4): close milestone`.
+- [x] **Z1** — Закрыть M4: завершить D1 (review pause неявно одобрен пользователем переходом к M5), выполнить E1 (`make build` + ROADMAP: M4 → [x] + строка `M4. Main theorem proven | 2026-05-26` в Completed table). Опц. INSIGHT в RESEARCH.md «процесс доказательства гл. 4: ε-релаксация разблокировала Theorem 4.2». Один commit: `chore(M4): close milestone`.
 
 ### Phase A: Outline двух глав (2 задачи)
 
-- [ ] **A1** ← Z1 — Outline в `docs/notes/05_06_pareto_outline.md` для глав 5 и 6 (~300-400 строк). Включает: (а) точную формулировку задачи MOO в обозначениях гл. 4, (б) псевдокод ε-constraint + PMP, (в) проектные решения по surrogate (spline vs MLP — выбрать одно с обоснованием), (г) структуру тест-набора (10 сценариев списком), (д) дизайн сравнения с NSGA-II (общая координатная плоскость, метрики hypervolume + IGD), (е) расположение `\label{sec:eps-constraint}` (§ 5.2), (ж) перечень рисунков (≥2 для гл. 5, ≥4 для гл. 6 — из Chapter Plan: блок-схема алгоритма, Парето-схема, фронт 2D × 3 проекции, 3D-облако, ghost evolution, energy distribution).
-- [ ] **A2** ← A1 — **⏸ PAUSE** для review outline пользователем. Критическая остановка: фиксируем выбор surrogate (spline/MLP), состав тест-набора, способ сравнения с NSGA-II до начала кода.
+- [x] **A1** ← Z1 — Outline в `docs/notes/05_06_pareto_outline.md` для глав 5 и 6 (~300-400 строк). Включает: (а) точную формулировку задачи MOO в обозначениях гл. 4, (б) псевдокод ε-constraint + PMP, (в) проектные решения по surrogate (spline vs MLP — выбрать одно с обоснованием), (г) структуру тест-набора (10 сценариев списком), (д) дизайн сравнения с NSGA-II (общая координатная плоскость, метрики hypervolume + IGD), (е) расположение `\label{sec:eps-constraint}` (§ 5.2), (ж) перечень рисунков (≥2 для гл. 5, ≥4 для гл. 6 — из Chapter Plan: блок-схема алгоритма, Парето-схема, фронт 2D × 3 проекции, 3D-облако, ghost evolution, energy distribution).
+- [x] **A2** ← A1 — **⏸ PAUSE** для review outline пользователем. Принято 2026-05-26. Критическая остановка: фиксируем выбор surrogate (spline/MLP), состав тест-набора, способ сравнения с NSGA-II до начала кода.
 
 ### Phase B: Python-инфраструктура оптимизации (3 задачи)
 
