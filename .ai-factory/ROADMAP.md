@@ -10,7 +10,7 @@
 
 - [x] **M3. Physical model chapter** — глава 3 курсовой (~14 стр PDF) с полным выводом Пуассона-Нернста-Планка из первых принципов (continuity + Стокс + Эйнштейн + Пуассон), mean-field редукция PDE→ODE с 3 явными допущениями, аналитическое решение Стокса (v_∞, τ_Stokes), калибровка эффективных параметров по реальному sweep'у на стенде (VSH1: E=1.63 мДж/refresh, VSH2: 1.51 мДж, C_eff≈11.7 нФ). `python/ode_sim.py` (overdamped + full режимы, 175 строк) + 21 pytest. `scripts/calibration_sweep.py` (sweep V × TP × n_repeats) + `scripts/process_calibration.py` (фитинг). 2 PDF-рис калибровки. Закрыт 2026-05-25.
 
-- [ ] **M4. Main theorem proven** — формулировка задачи как дискретной задачи оптимального управления с hard-constraint `Σ V·TP = 0`; основная структурная теорема («оптимум в классе charge-balanced waveforms — bang-bang с ≤K_eff активных фаз») сформулирована и доказана через дискретный PMP; полное доказательство с леммами; опционально — вторая теорема (нижняя оценка `E ≥ f(G, τ)`). [Артефакт: `tex/theorem.tex` с полным доказательством.]
+- [x] **M4. Main theorem proven** — глава 4 (~12 стр PDF) с формализацией дискретной задачи оптимального управления (4 Definition: waveform, ε-зарядовый баланс, bang-bang, K_eff), функционалом J = α·E + β·G + γ·τ (через формулу Lin 2024), ε-релаксацией зарядового баланса |Σ V·T| ≤ ε (~0.05 В·с по INA219), дискретным PMP Paruchuri & Chatterjee 2019. **Теорема 4.1** (структура: bang-bang с K_eff ≤ d_state + 2 = 4 фазы) доказана в 3 шагах через PMP + Лемма 4.1. **Теорема 4.2** (нижняя оценка энергии E* ≥ K_lower·G* ≈ 1.8 мДж/единица G) доказана через геометрию + интеграл напряжения + Lin 2024. 5 Corollary (оценка пространства поиска, He 2020 как частный случай d_state=1, превосходство над DP Kang 2025, применимость к Парето, сопоставление с Lin 2024 ≈30% от теоретического оптимума). Закрыт 2026-05-26.
 
 - [ ] **M5. Pareto algorithm + simulator** — реализован алгоритм построения Парето-границы (ε-constraint + дискретный PMP по срезам); обучена surrogate-модель (NN/spline) для быстрой оптимизации; полный пайплайн `target → optimal waveform` в Python notebook; воспроизводимый Парето-фронт для тест-набора из ≥10 изображений; сравнение с NSGA-II как baseline-алгоритмом. [Артефакт: `tex/algorithm.tex`, `tex/simulation.tex`, `notebook/02_optimize.ipynb`, `notebook/03_pareto.ipynb`.]
 
@@ -27,6 +27,7 @@
 | M1. Foundation | 2026-05-25 |
 | M2. Literature review locked | 2026-05-25 |
 | M3. Physical model chapter | 2026-05-25 |
+| M4. Main theorem proven | 2026-05-26 |
 
 ## Phase plan (target: ~20 weeks to October 2026)
 

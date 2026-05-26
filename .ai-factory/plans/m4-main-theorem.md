@@ -49,11 +49,11 @@
 
 ### Phase D: review (1 задача)
 
-- [ ] **D1 (Task #54)** ← C2 — **⏸ PAUSE** для review draft главы целиком. Критическая остановка для оценки корректности теоремы и каждого шага доказательства.
+- [x] **D1 (Task #54)** ← C2 — Review draft главы 4 одобрен пользователем (переход к /aif-plan M5).
 
 ### Phase E: финализация (1 задача)
 
-- [ ] **E1 (Task #55)** ← D1 — Final build, ROADMAP M4 → [x] + Completed table. Опц. INSIGHT-карточки в RESEARCH.md про процесс доказательства.
+- [x] **E1 (Task #55)** ← D1 — Final build (53 стр PDF, warning «undefined references» — это forward-ref `\ref{sec:eps-constraint}` для гл. 5, разрешится в M5/E1). ROADMAP: M4 → [x] + строка `M4. Main theorem proven | 2026-05-26` в Completed table.
 
 ## Commit Plan
 
