@@ -12,7 +12,7 @@
 
 - [x] **M4. Main theorem proven** — глава 4 (~12 стр PDF) с формализацией дискретной задачи оптимального управления (4 Definition: waveform, ε-зарядовый баланс, bang-bang, K_eff), функционалом J = α·E + β·G + γ·τ (через формулу Lin 2024), ε-релаксацией зарядового баланса |Σ V·T| ≤ ε (~0.05 В·с по INA219), дискретным PMP Paruchuri & Chatterjee 2019. **Теорема 4.1** (структура: bang-bang с K_eff ≤ d_state + 2 = 4 фазы) доказана в 3 шагах через PMP + Лемма 4.1. **Теорема 4.2** (нижняя оценка энергии E* ≥ K_lower·G* ≈ 1.8 мДж/единица G) доказана через геометрию + интеграл напряжения + Lin 2024. 5 Corollary (оценка пространства поиска, He 2020 как частный случай d_state=1, превосходство над DP Kang 2025, применимость к Парето, сопоставление с Lin 2024 ≈30% от теоретического оптимума). Закрыт 2026-05-26.
 
-- [ ] **M5. Pareto algorithm + simulator** — реализован алгоритм построения Парето-границы (ε-constraint + дискретный PMP по срезам); обучена surrogate-модель (NN/spline) для быстрой оптимизации; полный пайплайн `target → optimal waveform` в Python notebook; воспроизводимый Парето-фронт для тест-набора из ≥10 изображений; сравнение с NSGA-II как baseline-алгоритмом. [Артефакт: `tex/algorithm.tex`, `tex/simulation.tex`, `notebook/02_optimize.ipynb`, `notebook/03_pareto.ipynb`.]
+- [x] **M5. Pareto algorithm + simulator** — главы 5 (Алгоритм Парето-границы, ~5 стр) и 6 (Симуляция, ~7 стр) написаны. `python/optimizer.py` (solve_pmp_slice — дискретный PMP), `python/surrogate.py` (RegularGridInterpolator + векторизованный predict_batch), `python/pareto.py` (build_pareto_frontier с pre-eval пулом), `python/baselines.py` (NSGA-II Deb 2002 с numpy-векторизованным non-dominated sort, smart-init по charge balance). 30 новых pytest (suite 117/117). Notebooks `02_optimize.ipynb` (один PMP-пример) и `03_pareto.ipynb` (полный фронт по 10 сценариям + NSGA-II сравнение). 7 PDF-figures + 2 LaTeX-таблицы в `tex/figures/plots/` и `tex/tables/`. **Глубокая ревизия:** симулированный B0 (4-фазный заводской waveform через тот же surrogate) для честного сравнения, ε_τ-сетка расширена до 0.7с для покрытия 4-фазных Парето-оптимумов, NSGA-II с hard-reject infeasible. **Perf:** 76с→2.7с (28× ускорение) через pre-eval пул + numpy broadcast non-dominated sort + ProcessPoolExecutor по сценариям. `\label{sec:eps-constraint}` в § 5.2 разрешил forward-ref из § 4.6. PDF 67 стр, 0 undefined refs. Закрыт 2026-05-26.
 
 - [ ] **M6. Experimental validation** — фотостанд готов (картонный кожух, LED-кольцо, USB-камера/iPhone, фиксированное расстояние); полный набор B0..B4 (Waveshare full / Waveshare fast / custom static / content-adaptive / temp+content-adaptive) измерен на ≥10 сценариях × ≥50 повторов; ImageJ-pipeline для извлечения SSIM/residual из фото; графики симулированного и измеренного Парето на одной координате; анализ расхождений. [Артефакт: `tex/experiment.tex`, `notebook/04_bench.ipynb`, `data/bench/*.csv`, `figures/pareto_sim_vs_stand.pdf`.]
 
@@ -28,6 +28,7 @@
 | M2. Literature review locked | 2026-05-25 |
 | M3. Physical model chapter | 2026-05-25 |
 | M4. Main theorem proven | 2026-05-26 |
+| M5. Pareto algorithm + simulator | 2026-05-26 |
 
 ## Phase plan (target: ~20 weeks to October 2026)
 

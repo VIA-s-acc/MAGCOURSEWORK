@@ -129,3 +129,4 @@ firmware/build/
 firmware/*.elf
 firmware/*.bin
 firmware/*.map
+data/cache_nsga/

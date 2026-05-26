@@ -148,29 +148,68 @@ class SurrogateModel:
     # ---- Predict ---------------------------------------------------------
 
     def predict(self, waveform: Waveform, z_init: float, z_target: float) -> tuple[float, float, float]:
-        """Вернуть (E [мДж], G [||·||_1], τ [с]) для данного waveform.
-
-        Логика: проходим по фазам последовательно, на каждой шаге
-        обновляем z_curr := z_curr + δz(V, T, clip(z_curr)).
-        E аддитивна.
-        """
+        """Вернуть (E [мДж], G [||·||_1], τ [с]) для данного waveform."""
         if self._e_interp is None or self._dz_interp is None:
             raise RuntimeError("surrogate is not fitted; call fit_from_ode_sim() first")
-
         z_curr = z_init
         e_total = 0.0
         rho_min, rho_max = self.z_clip
-
         for V, T in zip(waveform.voltages, waveform.durations):
             e_phase = float(self._e_interp([[V, float(T)]])[0])
             z_clipped = float(np.clip(z_curr, rho_min, rho_max))
             dz_phase = float(self._dz_interp([[V, float(T), z_clipped]])[0])
             e_total += e_phase
             z_curr += dz_phase
-
         g = abs(z_curr - z_target)
         tau = waveform.total_time
         return (e_total, g, tau)
+
+    def predict_batch(self, waveforms: list[Waveform], z_init: float, z_target: float) -> np.ndarray:
+        """Векторизованный predict для пакета waveform'ов.
+
+        Возвращает np.ndarray shape (N, 3) с колонками (E, G, τ).
+        Существенно быстрее цикла из predict() — один вызов interp на пакет
+        вместо отдельного на каждую фазу каждого waveform.
+        """
+        if self._e_interp is None or self._dz_interp is None:
+            raise RuntimeError("surrogate is not fitted; call fit_from_ode_sim() first")
+        N = len(waveforms)
+        if N == 0:
+            return np.empty((0, 3))
+
+        # Длины могут различаться → padding по максимуму, маска активных фаз
+        K_max = max(len(wf.voltages) for wf in waveforms)
+        V_pad = np.zeros((N, K_max))
+        T_pad = np.zeros((N, K_max))
+        mask = np.zeros((N, K_max), dtype=bool)
+        tau = np.zeros(N)
+        for i, wf in enumerate(waveforms):
+            k = len(wf.voltages)
+            V_pad[i, :k] = wf.voltages
+            T_pad[i, :k] = wf.durations
+            mask[i, :k] = True
+            tau[i] = wf.total_time
+
+        rho_min, rho_max = self.z_clip
+        # E аддитивна, не зависит от z → batch по (V, T) сразу для всех (i, k)
+        pts_e = np.stack([V_pad.ravel(), T_pad.ravel()], axis=1)  # (N*K, 2)
+        e_flat = self._e_interp(pts_e)  # type: ignore[operator]
+        e_grid_per_phase = e_flat.reshape(N, K_max) * mask
+        E = e_grid_per_phase.sum(axis=1)
+
+        # Δz зависит от z_curr → по фазам последовательно, но батч по waveform
+        z_curr = np.full(N, z_init)
+        for k in range(K_max):
+            active = mask[:, k]
+            if not active.any():
+                break
+            z_clip = np.clip(z_curr, rho_min, rho_max)
+            pts_dz = np.stack([V_pad[:, k], T_pad[:, k], z_clip], axis=1)
+            dz = self._dz_interp(pts_dz)  # type: ignore[operator]
+            z_curr = z_curr + np.where(active, dz, 0.0)
+
+        G = np.abs(z_curr - z_target)
+        return np.stack([E, G, tau], axis=1)
 
     # ---- Round-trip validation ------------------------------------------
 

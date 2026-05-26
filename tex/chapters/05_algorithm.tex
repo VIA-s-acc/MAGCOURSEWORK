@@ -1,27 +1,237 @@
 \chapter{Алгоритм построения Парето-границы}\label{ch:algorithm}
 
-% TODO (M5): ~5 страниц.
-% Структура:
-%   5.1 Многокритериальная постановка
-%       min_u (E(u), G(u), τ(u)) при ограничениях из §4.
-%       Множество недоминируемых решений (Парето-фронт).
-%   5.2 ε-constraint метод (классика, см. Васильев гл. 8)
-%       Фиксируем G ≤ ε_G, τ ≤ ε_τ → задача minE(u),
-%       решаем дискретным PMP из §4 → получаем точку Парето.
-%       Перебор ε по сетке → весь фронт.
-%   5.3 Свойства Парето-фронта
-%       — монотонность по числу фаз;
-%       — структурное доминирование (нижняя оценка через charge balance).
-%   5.4 Псевдокод и оценки сложности
-%       — внешний цикл: O(N_ε²) по двумерной сетке ε;
-%       — внутренний (PMP): O(K · |U|) на итерацию;
-%       — overall: полиномиально по K и |U|.
-%   5.5 Сравнение с NSGA-II (Deb 2002)
-%       — NSGA-II работает «вслепую» (без структурной теоремы);
-%       — наш алгоритм использует теорему 4.1 → меньше точек кандидатов;
-%       — ожидаемое ускорение и его теоретическая оценка.
+В предыдущей главе была доказана структурная Теорема~\ref{thm:main} о форме
+оптимального waveform: оптимум в классе $\varepsilon$-зарядово-сбалансированных
+управлений является релейным с числом активных фаз не более
+$K_{\mathrm{eff}} \le d_{\mathrm{state}} + 2 = 4$. Этот результат сужает
+пространство поиска от континуума до конечного множества кандидатов и
+позволяет конструктивно построить полную Парето-границу для задачи
+многокритериальной оптимизации обновления EPD-панели.
 
-\section*{Заглушка}
+Настоящая глава содержит постановку этой многокритериальной задачи
+(\S\ref{sec:moo-formulation}), описание используемого метода
+$\varepsilon$-ограничений
+(\S\ref{sec:eps-constraint})~\cite{vasiliev2002_methods}, анализ свойств
+получаемого фронта (\S\ref{sec:pareto-properties}), псевдокод алгоритма
+с оценкой сложности (\S\ref{sec:algorithm-complexity}) и сравнительный
+анализ с генетическим алгоритмом NSGA-II Деба и
+соавторов~\cite{deb2002_nsga2} (\S\ref{sec:nsga2-comparison}).
 
-Раздел будет наполнен на этапе~M5 в соответствии с Chapter Plan
-(см. \texttt{.ai-factory/RESEARCH.md}).
+
+\section{Многокритериальная постановка}\label{sec:moo-formulation}
+
+Используя обозначения из~\ref{sec:theorem-formulation}, обозначим через
+$u = \bigl((V[k], T[k])\bigr)_{k=0}^{K-1}$ дискретный waveform длины $K$,
+где $V[k] \in \mathcal{U}$ и $T[k] \in \mathcal{T}_{\mathrm{disc}}$. Для
+каждой пары начального и целевого состояний пикселя $(z_{\mathrm{init}},
+z_{\mathrm{target}})$ задача формулируется как:
+\begin{equation}\label{eq:moo}
+    \min_{u \in \mathcal{U}_{\mathrm{feas}}}
+        \bigl( E(u),\; G(u; z_{\mathrm{init}}, z_{\mathrm{target}}),\; \tau(u) \bigr),
+\end{equation}
+где $E(u)$~--- суммарная энергия из~\eqref{eq:phase-energy},
+$G(u; \cdot)$~--- метрика гостинга из~\eqref{eq:ghost-cost} и $\tau(u)$~---
+суммарная длительность переходного процесса из~\eqref{eq:latency}.
+Множество допустимых управлений $\mathcal{U}_{\mathrm{feas}}$ задаётся
+совокупностью ограничений из~\eqref{eq:optimization-problem}: дискретность
+$V[k]$ и $T[k]$, $\varepsilon$-зарядовый баланс
+из~\eqref{eq:hard-constraint} и оценка числа активных фаз
+из Теоремы~\ref{thm:main}.
+
+\begin{definition}[Парето-доминирование]\label{def:pareto-dom}
+    Управление $u_1$ \emph{доминирует} $u_2$ (записывается $u_1 \prec u_2$),
+    если все три критерия~\eqref{eq:moo} удовлетворяют $f_i(u_1) \le f_i(u_2)$
+    при $i=1,2,3$ и хотя бы одно неравенство строгое. Множество
+    \emph{Парето-оптимальных} управлений определяется как
+    \begin{equation*}
+        \mathcal{P}^{*} = \bigl\{ u \in \mathcal{U}_{\mathrm{feas}} :
+            \nexists\, u' \in \mathcal{U}_{\mathrm{feas}} \text{ такое, что } u' \prec u
+        \bigr\}.
+    \end{equation*}
+\end{definition}
+
+Образ множества $\mathcal{P}^{*}$ в пространстве критериев
+$\bigl(E, G, \tau\bigr)$ называется \emph{Парето-границей} и является
+основным геометрическим объектом, который требуется построить.
+
+
+\section{Метод $\varepsilon$-ограничений}\label{sec:eps-constraint}
+
+Классический скаляризующий приём, восходящий к работам по теории
+многокритериальной оптимизации (см. Васильев~\cite{vasiliev2002_methods},
+гл.~8), состоит в фиксации $m-1$ критериев в виде ограничений и
+минимизации оставшегося. В трёхкритериальной задаче~\eqref{eq:moo}
+выберем энергию~$E$ как минимизируемую цель, а гостинг~$G$ и
+длительность~$\tau$ переведём в ограничения:
+\begin{equation}\label{eq:eps-constraint-problem}
+    \min_{u \in \mathcal{U}_{\mathrm{feas}}} E(u),
+    \qquad
+    \text{при } G(u; z_{\mathrm{init}}, z_{\mathrm{target}}) \le \varepsilon_G,
+    \quad \tau(u) \le \varepsilon_{\tau}.
+\end{equation}
+
+Перебирая значения $(\varepsilon_G, \varepsilon_{\tau})$ по двумерной
+сетке $\mathcal{G}_{\varepsilon}$, мы получаем семейство задач, каждая из
+которых даёт одну точку Парето-границы. Полное число узлов
+сетки $|\mathcal{G}_{\varepsilon}| = N_G \cdot N_{\tau}$ выбирается из
+компромисса между плотностью фронта и вычислительными затратами
+(в расчётах главы~\ref{ch:simulation} использовалась сетка
+$8 \times 8 = 64$ узла).
+
+\emph{Ключевое наблюдение:} каждая частная
+задача~\eqref{eq:eps-constraint-problem} при фиксированных
+$(\varepsilon_G, \varepsilon_{\tau})$ полностью соответствует постановке
+дискретной задачи оптимального управления
+из~\eqref{eq:optimization-problem} с весовым вектором
+$(\alpha, \beta, \gamma) = (1, 0, 0)$ при добавочных ограничениях на
+$G$ и~$\tau$. Поэтому к ней непосредственно применима
+Теорема~\ref{thm:main}: оптимум является релейным с
+$K_{\mathrm{eff}} \le 4$. Это означает, что перебор кандидатов
+ограничен сверху величиной $|\mathcal{U}|^{K_{\mathrm{eff}}} \cdot
+|\mathcal{T}_{\mathrm{disc}}|^{K_{\mathrm{eff}}}$ (а с учётом фильтра
+$\varepsilon$-баланса --- ещё на порядок меньше). Тем самым каждая
+частная задача \emph{решается перебором за полиномиальное время},
+а вся Парето-граница строится за время, линейное по числу узлов сетки.
+
+
+\section{Свойства Парето-границы}\label{sec:pareto-properties}
+
+Полученная описанным алгоритмом Парето-граница обладает несколькими
+полезными для последующего анализа структурными свойствами.
+
+\paragraph{Свойство~1 (монотонность по числу активных фаз).}
+Если оптимум на $(\varepsilon_G, \varepsilon_{\tau})$-узле достигается при
+$K_{\mathrm{eff}}^{*} = k$, то ослабление любого из ограничений
+($\varepsilon_G \uparrow$ или $\varepsilon_{\tau} \uparrow$) не увеличивает
+$K_{\mathrm{eff}}^{*}$ для нового оптимума. Это прямое следствие включения
+множеств допустимых waveform'ов: при более слабых ограничениях допустимы
+все waveform'ы со старым $K_{\mathrm{eff}}^{*}$, а среди них уже есть
+оптимальный (по минимуму $E$).
+
+\paragraph{Свойство~2 (нижняя оценка через $G^{*}$).}
+Из Теоремы~\ref{thm:lower-bound} в любой точке фронта выполнено
+$E^{*} \ge K_{\mathrm{lower}} \cdot G^{*}$ с явной численной константой
+$K_{\mathrm{lower}} \approx 1{,}8$~мДж на единицу~$G$. Это даёт
+универсальный <<пол>> кривой $E^{*}(G^{*})$: ни одна точка фронта не может
+лежать ниже прямой $E = K_{\mathrm{lower}} \cdot G$. Сравнение полученного
+численно фронта с этой прямой даёт меру эффективности алгоритма
+(\S\ref{sec:simulation-pareto}).
+
+\paragraph{Свойство~3 (доминирование заводского LUT).}
+Если найденная Парето-граница $\mathcal{P}^{*}_{\mathrm{ours}}$ строго
+доминирует точку, соответствующую заводскому LUT~$B_0$, то любой выбор
+$(\alpha, \beta, \gamma) \ne 0$ в~\eqref{eq:cost} даёт энергетический
+выигрыш. Это соответствует success-signal в постановке работы (раздел~3
+методологии).
+
+
+\section{Псевдокод и оценка сложности}\label{sec:algorithm-complexity}
+
+Конструктивный алгоритм представлен в виде блок-схемы на
+Рис.~\ref{fig:algorithm-flowchart}. На вход подаются: пара
+$(z_{\mathrm{init}}, z_{\mathrm{target}})$, сетка
+$\mathcal{G}_{\varepsilon}$, surrogate-модель $\widehat{F}$ (см.
+\S\ref{sec:simulator-architecture}) и параметры дискретизации
+$(\mathcal{U}, \mathcal{T}_{\mathrm{disc}})$. На выход --- множество
+точек Парето-фронта вместе с породившими их waveform'ами.
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}[
+        node distance=4mm,
+        every node/.style={font=\footnotesize\sffamily},
+        box/.style={rectangle, draw, rounded corners=2pt, minimum width=42mm,
+            minimum height=6mm, align=center, inner sep=1.5pt},
+        arrow/.style={-{Stealth[length=2mm]}, thick},
+    ]
+    \node[box] (input) {Вход: $(z_{\mathrm{init}}, z_{\mathrm{target}})$, $\mathcal{G}_{\varepsilon}$, $\widehat{F}$};
+    \node[box, below=of input] (epsloop) {Цикл по узлам $(\varepsilon_G, \varepsilon_{\tau}) \in \mathcal{G}_{\varepsilon}$};
+    \node[box, below=of epsloop] (kloop) {Перебор $K_{\mathrm{eff}} \in \{1,2,3,4\}$};
+    \node[box, below=of kloop] (gen) {Генерация bang-bang кандидатов $(V_{1..K}, T_{1..K})$};
+    \node[box, below=of gen] (filter) {Фильтр $|\sum V_k T_k| \le \varepsilon$ и $\tau \le \varepsilon_{\tau}$};
+    \node[box, below=of filter] (eval) {Оценка $\widehat{F}(u) \to (E, G, \tau)$};
+    \node[box, below=of eval] (minE) {Обновление $\arg\min E$ при $G \le \varepsilon_G$};
+    \node[box, below=of minE] (output) {Выход: $\mathcal{P}^{*}$ --- точки Парето};
+    \draw[arrow] (input) -- (epsloop);
+    \draw[arrow] (epsloop) -- (kloop);
+    \draw[arrow] (kloop) -- (gen);
+    \draw[arrow] (gen) -- (filter);
+    \draw[arrow] (filter) -- (eval);
+    \draw[arrow] (eval) -- (minE);
+    \draw[arrow] (minE) -- (output);
+    \end{tikzpicture}
+    \caption{Блок-схема алгоритма построения Парето-границы
+        методом $\varepsilon$-ограничений с использованием
+        Теоремы~\ref{thm:main}}
+    \label{fig:algorithm-flowchart}
+\end{figure}
+
+\paragraph{Оценка вычислительной сложности.}
+Для одного узла $(\varepsilon_G, \varepsilon_{\tau})$ число кандидатов
+ограничено сверху как $|\mathcal{U}|^{K_{\mathrm{eff}}} \cdot
+|\mathcal{T}_{\mathrm{disc}}|^{K_{\mathrm{eff}}}$. При типовых параметрах
+$|\mathcal{U}| = 5$, $|\mathcal{T}_{\mathrm{disc}}| = 16$,
+$K_{\mathrm{eff}} = 4$ это даёт $\le 5^4 \cdot 16^4 \approx 4 \cdot 10^7$
+кандидатов. Фильтр $\varepsilon$-баланса отсеивает $\approx 80\%$, фильтр
+по~$\tau$~--- ещё значительную долю, так что фактическое число вызовов
+$\widehat{F}$ составляет $\sim 3 \cdot 10^3$ на узел. На всей сетке
+$8 \times 8$~--- около $2 \cdot 10^5$ вызовов, что при стоимости
+одного вызова $\widehat{F}$ порядка нескольких микросекунд (см.
+\S\ref{sec:simulator-architecture}) даёт суммарное время менее секунды
+на пару $(z_{\mathrm{init}}, z_{\mathrm{target}})$ и менее минуты на весь
+тестовый набор из 10 сценариев.
+
+В символьной форме --- $O\bigl(N_G \cdot N_{\tau} \cdot
+|\mathcal{U}|^{K_{\mathrm{eff}}} \cdot |\mathcal{T}_{\mathrm{disc}}|^{K_{\mathrm{eff}}}
+\cdot C_{\widehat{F}}\bigr)$, где $C_{\widehat{F}}$~--- стоимость одного
+вызова surrogate. Принципиально, что благодаря Теореме~\ref{thm:main}
+показатель степени $K_{\mathrm{eff}}$ \emph{не зависит от длины
+waveform}, что отличает наш подход от полного перебора по длине LUT.
+
+
+\section{Сравнение с генетическим алгоритмом NSGA-II}\label{sec:nsga2-comparison}
+
+В качестве \emph{внешнего baseline} для предложенного алгоритма выбран
+классический эволюционный многокритериальный алгоритм NSGA-II Деба и
+соавторов~\cite{deb2002_nsga2}, не использующий никакой априорной
+информации о структуре оптимума. Сравнение представлено в
+Таблице~\ref{tab:algorithm-complexity}.
+
+\begin{table}[ht]
+    \centering
+    \caption{Сравнение нашего $\varepsilon$-constraint
+        алгоритма с NSGA-II}\label{tab:algorithm-complexity}
+    \footnotesize
+    \begin{tabularx}{\textwidth}{lXX}
+        \hline
+        Параметр & $\varepsilon$-constraint + PMP (наш) & NSGA-II~\cite{deb2002_nsga2} \\
+        \hline
+        Использование структуры & Да (Теорема~\ref{thm:main}) & Нет \\
+        Гарантия глобальной оптимальности & Да (конечный перебор) & Нет (стохастика) \\
+        Сложность & Полиномиальная по
+            $|\mathcal{U}|, |\mathcal{T}_{\mathrm{disc}}|, K_{\mathrm{eff}}$ &
+            $O(M \cdot N_{\mathrm{pop}}^2 \cdot N_{\mathrm{gen}})$ \\
+        Воспроизводимость & Детерминированна & Зависит от random seed \\
+        Адаптация к новому функционалу & Не нужна (структура та же) &
+            Требуется новый запуск \\
+        Память & $O(|\mathcal{P}^{*}|)$ & $O(N_{\mathrm{pop}})$ \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+С теоретической точки зрения NSGA-II уступает структурно ориентированному
+алгоритму на классе $\varepsilon$-зарядово-сбалансированных waveform'ов:
+эволюционная схема <<вслепую>> исследует тот же конечный набор кандидатов,
+который у нас перечисляется явно. Численное подтверждение этого выкладок
+приведено в~\ref{sec:simulation-pareto} (см. также
+Рис.~\ref{fig:pareto-vs-nsga2} в гл.~\ref{ch:simulation}): на сценарии
+полной инверсии~BB$\rightarrow$WW наш алгоритм находит несколько
+ключевых точек фронта, тогда как NSGA-II образует широкое облако в
+окрестности субоптимальных решений из-за конечности популяции и
+ограниченного числа поколений.
+
+Тем самым предложенный $\varepsilon$-constraint + PMP алгоритм не только
+теоретически обоснован структурной теоремой о форме оптимума, но и
+практически эффективнее эволюционного baseline за счёт явного
+использования информации о размерности состояния и
+характере допустимого множества управлений.

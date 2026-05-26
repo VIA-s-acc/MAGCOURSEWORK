@@ -24,6 +24,7 @@ import logging
 from dataclasses import dataclass
 
 import numpy as np
+from tqdm.auto import tqdm
 
 from python.optimizer import (
     DEFAULT_CHARGE_EPS,
@@ -31,8 +32,10 @@ from python.optimizer import (
     DEFAULT_F_FRAME,
     DEFAULT_K_EFF_MAX,
     DEFAULT_VOLTAGES,
+    Waveform,
     WaveformModel,
     WaveformResult,
+    _iter_bang_bang_candidates,
     solve_pmp_slice,
 )
 
@@ -64,32 +67,54 @@ def build_pareto_frontier(
     k_eff_max: int = DEFAULT_K_EFF_MAX,
     charge_eps: float = DEFAULT_CHARGE_EPS,
     f_frame: float = DEFAULT_F_FRAME,
+    show_progress: bool = False,
 ) -> list[ParetoPoint]:
     """Построить Парето-фронт для одной задачи перехода (z_init → z_target).
 
     Перебор по 2D сетке (ε_G, ε_τ) → для каждого узла — solve_pmp_slice →
     собираем все непустые результаты → фильтрация недоминируемых.
+    show_progress=True включает tqdm-бар по ε-узлам (для notebook'ов).
     """
     logger.info(
         "build_pareto_frontier: z_init=%.3f, z_target=%.3f, grid %d×%d",
         z_init, z_target, len(eps_G_grid), len(eps_tau_grid),
     )
 
+    # Предвычисляем все charge-balanced кандидаты ОДИН РАЗ. Дополнительно
+    # пользуемся batch-predict у surrogate (если есть) для ещё ~10x ускорения.
+    pool_wfs: list[Waveform] = []
+    for wf in _iter_bang_bang_candidates(voltages, durations, k_eff_max, f_frame):
+        if abs(wf.charge_integral) > charge_eps:
+            continue
+        pool_wfs.append(wf)
+    logger.info("pre-evaluated pool: %d charge-balanced candidates", len(pool_wfs))
+
+    pool: list[tuple[float, float, float, Waveform]] = []
+    if hasattr(model, "predict_batch"):
+        results = model.predict_batch(pool_wfs, z_init, z_target)
+        for wf, (E, G, tau) in zip(pool_wfs, results):
+            pool.append((float(E), float(G), float(tau), wf))
+    else:
+        for wf in pool_wfs:
+            E, G, tau = model.predict(wf, z_init, z_target)
+            pool.append((E, G, tau, wf))
+
     candidates: list[ParetoPoint] = []
-    for eps_G in eps_G_grid:
-        for eps_tau in eps_tau_grid:
-            res = solve_pmp_slice(
-                z_init=z_init, z_target=z_target,
-                eps_G=eps_G, eps_tau=eps_tau,
-                model=model,
-                voltages=voltages, durations=durations,
-                k_eff_max=k_eff_max, charge_eps=charge_eps, f_frame=f_frame,
-            )
-            if res is not None:
-                candidates.append(ParetoPoint(
-                    energy=res.energy, ghost=res.ghost, latency=res.latency,
-                    waveform_result=res,
-                ))
+    cells = [(eg, et) for eg in eps_G_grid for et in eps_tau_grid]
+    cell_iter = tqdm(cells, desc="ε-сетка", unit="узел", leave=False) if show_progress else cells
+    for eps_G, eps_tau in cell_iter:
+        best: tuple[float, float, float, Waveform] | None = None
+        for E, G, tau, wf in pool:
+            if G > eps_G or tau > eps_tau:
+                continue
+            if best is None or E < best[0]:
+                best = (E, G, tau, wf)
+        if best is not None:
+            E, G, tau, wf = best
+            wr = WaveformResult(waveform=wf, energy=E, ghost=G, latency=tau)
+            candidates.append(ParetoPoint(
+                energy=E, ghost=G, latency=tau, waveform_result=wr,
+            ))
 
     frontier = filter_dominated(candidates)
     logger.info("frontier: %d candidates → %d non-dominated", len(candidates), len(frontier))
