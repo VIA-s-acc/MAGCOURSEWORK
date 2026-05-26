@@ -1,60 +1,73 @@
-% TikZ-схема фотостанда для гл. 7 § 7.3
-% Включается через \input{figures/diagrams/photo_stand.tex}
+% TikZ-схема фотостанда для гл. 7 § 7.3.
+% Подключается через \input{figures/diagrams/photo_stand.tex}.
 \begin{tikzpicture}[
     every node/.style={font=\footnotesize},
-    box/.style={draw, thick, minimum width=70mm, minimum height=55mm, fill=gray!10},
-    led/.style={circle, draw, fill=yellow!60, minimum size=2.5mm, inner sep=0pt},
+    box/.style={draw, thick, fill=gray!8},
     phone/.style={draw, thick, fill=white, rounded corners=1.5pt,
-                  minimum width=14mm, minimum height=22mm},
-    epd/.style={draw, thick, fill=white, minimum width=28mm, minimum height=10mm},
-    arr/.style={-{Stealth[length=2mm]}, thick},
-    label/.style={font=\scriptsize, align=left},
+                  minimum width=40mm, minimum height=10mm},
+    epd/.style={draw, thick, fill=white, minimum width=34mm, minimum height=8mm},
+    label/.style={font=\scriptsize, align=left, inner sep=1pt},
+    sidelight/.style={draw=orange!80!black, thick, fill=yellow!50,
+                      minimum width=4mm, minimum height=8mm},
 ]
 
-% Корпус коробки (вид сбоку, разрез)
-\node[box] (box) at (0, 0) {};
-% Чёрное матовое дно — заштрихованная нижняя полоса
-\fill[pattern=north east lines, pattern color=black!70] (-3.5, -2.75) rectangle (3.5, -2.45);
-\node[label] at (3.0, -2.6) [right] {чёрное\\матовое\\дно};
+% --- Корпус коробки (вид сбоку, разрез) -----------------------------
+% Стенки и дно — верх открыт.
+\draw[box]
+    (-4.0, -2.8) -- (-4.0, 1.6)        % левая стенка
+    (-4.0, -2.8) -- (4.0, -2.8)        % дно
+    (4.0, -2.8) -- (4.0, 1.6);         % правая стенка
 
-% Чёрные стенки
-\draw[line width=1.5pt, black!80] (-3.5, -2.75) -- (-3.5, 2.75);
-\draw[line width=1.5pt, black!80] (3.5, -2.75)  -- (3.5, 2.75);
+% Чёрное матовое дно (штриховка внутри)
+\fill[pattern=north east lines, pattern color=black!70]
+    (-3.85, -2.7) rectangle (3.85, -2.4);
 
-% Верх открыт
-\node[label] at (0, 2.95) {\textbf{верх открыт} (отверстие для камеры)};
+% Жирные внутренние стенки = «чёрные стенки»
+\draw[line width=1.8pt, black] (-3.85, -2.7) -- (-3.85, 1.45);
+\draw[line width=1.8pt, black] ( 3.85, -2.7) -- ( 3.85, 1.45);
 
-% Телефон сверху, камерой вниз
-\node[phone] (phone) at (0, 1.5) {};
-\node[font=\scriptsize] at (0, 1.5) {iPhone};
-% Объектив (кружок снизу телефона)
-\filldraw[fill=black!40] (0, 0.45) circle (1.8mm);
-\node[font=\scriptsize] at (0.45, 0.5) [right] {объектив};
+% --- Телефон лежит СВЕРХУ коробки, перекрывая отверстие -------------
+% (объектив снизу телефона смотрит в открытое отверстие коробки)
+\node[phone] (phone) at (0, 2.0) {};
+\node[font=\scriptsize] at (0, 2.0) {Телефон (камерой вниз)};
 
-% LED-кольцо вокруг объектива
-\foreach \ang in {0,30,...,330}{
-    \node[led] at ({0.65*cos(\ang)}, {0.45 + 0.65*sin(\ang)}) {};
-}
-\node[label] at (-1.4, 0.45) [left] {LED-кольцо};
+% Объектив (снизу телефона, внутрь коробки)
+\filldraw[fill=black!50] (0, 1.55) circle (1.8mm);
+\node[label] at (0.55, 1.55) [right] {объектив};
 
-% Лучи света от LED под углом (диффузный, не вертикально)
-\foreach \x/\angle in {-0.6/-65, 0.6/-115}{
-    \draw[-{Stealth[length=1.5mm]}, dashed, gray, thick]
-        ({\x}, 0.0) -- ({\x*2.2}, -1.5);
-}
+% Отверстие в верхе коробки — рисуем разрыв стенок (уже сделано выше)
+\node[label, align=center] at (-3.0, 2.4) {верх открыт\\(отверстие)};
+\draw[->, thin, gray] (-2.55, 2.30) -- (-1.0, 1.65);
 
-% EPD-панель в центре дна, лицом вверх
-\node[epd] (epd) at (0, -2.25) {EPD (Waveshare 2.13"V4)};
+% --- Боковое освещение (телефон-фонарик с диффузором или лампа) -----
+\node[sidelight, rotate=-30] (lampL) at (-3.0, 0.4) {};
+\node[sidelight, rotate=30]  (lampR) at ( 3.0, 0.4) {};
+\node[label, align=center] at (-3.0, 1.05) {боковой\\свет};
+\node[label, align=center] at ( 3.0, 1.05) {боковой\\свет};
 
-% Калибровочный квадрат (опц.)
-\filldraw[draw=black, fill=white] (1.95, -2.45) rectangle (2.45, -1.95);
-\node[label] at (2.65, -2.20) [right] {калиб.\\квадрат\\(опц.)};
+% Лучи света от боковых источников на EPD (диффузные пунктиры)
+\draw[-{Stealth[length=1.5mm]}, dashed, orange!70!black, thick]
+    (-2.7, 0.2) -- (-0.7, -2.05);
+\draw[-{Stealth[length=1.5mm]}, dashed, orange!70!black, thick]
+    ( 2.7, 0.2) -- ( 0.7, -2.05);
 
-% Расстояние от объектива до EPD (вертикальная двусторонняя стрелка)
-\draw[<->, thick, red] (-2.2, 0.45) -- (-2.2, -2.20)
-    node[midway, left, label, text=red] {15--20\,см};
+% --- EPD-панель в центре дна, лицом вверх ---------------------------
+\node[epd] (epd) at (-0.6, -2.18) {EPD (Waveshare 2.13"V4)};
 
-% Подпись «вид сбоку, разрез»
-\node[label] at (0, -3.3) [font=\scriptsize\itshape] {вид сбоку (разрез коробки)};
+% --- Калибровочный квадрат рядом с EPD ------------------------------
+\filldraw[draw=black, very thick, fill=white] (2.0, -2.35) rectangle (2.5, -1.85);
+\draw[->, thin, gray] (2.65, -1.65) -- (2.40, -1.95);
+\node[label, align=left] at (2.7, -1.45) [right] {калибр.\\квадрат\\(опц.)};
+
+% --- Расстояние от объектива до EPD (двойная стрелка слева) ---------
+\draw[<->, thick, red!80!black] (-3.4, 1.55) -- (-3.4, -2.18)
+    node[midway, left, label, text=red!80!black] {15--20\,см};
+
+% --- Подпись чёрного дна -------------------------------------------
+\draw[->, thin, gray] (-3.2, -3.05) -- (-3.4, -2.55);
+\node[label, align=left] at (-3.2, -3.18) {чёрное матовое дно};
+
+% --- Заголовок вида ------------------------------------------------
+\node[label] at (0, -3.55) [font=\scriptsize\itshape] {вид сбоку (разрез коробки)};
 
 \end{tikzpicture}
