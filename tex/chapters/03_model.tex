@@ -502,14 +502,14 @@ $\approx 4{,}0$~с при максимальной частоте семплир
 аппаратной части и протокола обмена приведены в гл.~\ref{ch:experiment}.
 
 Калибровочная серия измерений, реализованная в
-\texttt{scripts/calibration\_sweep.py},
+\texttt{scripts/\allowbreak calibration\_sweep.py},
 выполняет серию запусков опкода \texttt{BENCH\_RUN} с одно-фазными waveform,
 охватывая комбинации двух уровней source ($V_{\mathrm{SH1}} \approx +15$~В,
 $V_{\mathrm{SH2}} \approx +5$~В) и четырёх длительностей фазы
 $T_P \in \{5, 10, 20, 50\}$ кадров, по $n_{\mathrm{rep}} = 10$ повторов на
 каждую комбинацию. Для каждого запуска записывается полная трасса
 $\{(t_i, I_i, P_i)\}$ длительностью 4~с в файл формата CSV. Обработка трасс
-производится скриптом \texttt{scripts/process\_calibration.py} (Python,
+производится скриптом \texttt{scripts/\allowbreak process\_calibration.py} (Python,
 \texttt{pandas} + \texttt{scipy.optimize}).
 
 Полная длительность одного измерительной серии --- около 40~с чистого измерения. Между

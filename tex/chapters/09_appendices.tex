@@ -63,25 +63,27 @@ $a > 0$~--- скорость релаксации остаточного зар�
 Доказательство опирается на следующий результат, который мы приводим в
 адаптированных обозначениях, сохраняя содержание оригинала.
 
-\begin{proposition}[дискретный принцип максимума; {\citeauthor{paruchuri2019_discrete_pmp},
-Theorem~3.1~\cite{paruchuri2019_discrete_pmp}}]\label{prop:pmp}
+\begin{proposition}[дискретный принцип максимума; Paruchuri и Chatterjee,
+Theorem~3.1~\cite{paruchuri2019_discrete_pmp}]\label{prop:pmp}
 Рассмотрим задачу
-$$
+\begin{equation}\label{eq:app-pmp-problem}
     \min \;\sum_{k=0}^{K-1} c_k\bigl(z[k], u[k]\bigr)
-    \quad\text{при}\quad
-    z[k+1] = F_k\bigl(z[k], u[k]\bigr),\;\;
-    u[k] \in U_k,\;\;
+\end{equation}
+при ограничениях
+\begin{equation}\label{eq:app-pmp-constraints}
+    z[k+1] = F_k\bigl(z[k], u[k]\bigr),\quad
+    u[k] \in U_k,\quad
     \Phi\bigl(u[0], \dots, u[K-1]\bigr) = 0,
-$$
+\end{equation}
 где для всех~$k$ отображения $F_k$ и функции стоимости $c_k$ непрерывно
 дифференцируемы по $(z, u)$, множества~$U_k$ замкнуты, а
 $\Phi$~--- непрерывно дифференцируемое отображение, кодирующее
 непоточечное (связывающее разные моменты времени) ограничение. Пусть
 $(z^{*}[\cdot], u^{*}[\cdot])$~--- оптимальная траектория. Введём гамильтониан
-$$
+\begin{equation}\label{eq:app-pmp-ham}
     H_k(\lambda, z, u) = \langle \lambda,\, F_k(z, u)\rangle
         - \nu\, c_k(z, u) - \langle \mu,\, \nabla_{u}\Phi\rangle.
-$$
+\end{equation}
 Тогда существуют сопряжённая последовательность
 $\{\lambda[k]\}_{k=0}^{K}$, множитель $\mu$ ограничения~$\Phi$ и параметр
 нормальности $\nu \in \{0, 1\}$, не обращающиеся в нуль одновременно,
@@ -187,9 +189,9 @@ $V(u) = 0$ рассматриваются отдельно в~\ref{app:a-relay}.
 \end{lemma}
 
 \begin{proof}
-Ограничение~\eqref{eq:hard-constraint} есть единственное связывающее условие
-$|\Phi(u)| \le \varepsilon$ с
-$\Phi(u) = \sum_{k} V(u[k])\,T_k$, линейным по управляющим напряжениям.
+Ограничение~\eqref{eq:hard-constraint}~--- это единственное условие связи
+вида $|\Phi(u)| \le \varepsilon$, где
+$\Phi(u) = \sum_{k} V(u[k])\,T_k$ линейно по управляющим напряжениям.
 Рассмотрим waveform $\widehat{u}$, у которого все фазы установлены на пассивный
 уровень $V_{\mathrm{COM}} = 0$. Тогда $\Phi(\widehat{u}) = 0$, и поскольку
 $\varepsilon > 0$, выполнено строгое неравенство
@@ -406,20 +408,19 @@ $s(k)$ есть показательная сумма из $m = d_{\mathrm{state
 $\varepsilon$-баланса~\eqref{eq:hard-constraint} оптимальный waveform может
 содержать одну завершающую балансирующую фазу противоположной полярности
 (Лемма~\ref{lem:vcom} разрешает её лишь при необходимости баланса), что
-добавляет не более одного переключения. Суммируя:
-$$
-    K_{\mathrm{eff}}
-    \;\le\;
-    \underbrace{1}_{\text{знакоперемены } s}
-    + \underbrace{1}_{\text{начальная фаза}}
-    + \underbrace{1}_{\text{балансирующая фаза}}
-    + \underbrace{1}_{\text{запас при кратном корне}}
-    \;=\; d_{\mathrm{state}} + 2 = 4.
-$$
-Последнее слагаемое~--- консервативный запас на вырожденный случай совпадения
-собственных значений (когда возникает дополнительная мода~$k$ и
-Лемма~\ref{lem:sign-changes} даёт на одну знакоперемену больше). Тем самым
-оценка $K_{\mathrm{eff}} \le d_{\mathrm{state}} + 2$ установлена строго.
+добавляет не более одного переключения. Складывая вклады, получаем
+\begin{equation}\label{eq:app-keff-count}
+    K_{\mathrm{eff}} \;\le\; \underbrace{1}_{(1)} + \underbrace{1}_{(2)}
+        + \underbrace{1}_{(3)} + \underbrace{1}_{(4)}
+        \;=\; d_{\mathrm{state}} + 2 = 4,
+\end{equation}
+где слагаемые отвечают: (1)~единственной знакоперемене переключающей
+функции~$s$ (Лемма~\ref{lem:sign-changes}); (2)~начальной фазе $k=1$,
+считающейся активной; (3)~завершающей балансирующей фазе; (4)~консервативному
+запасу на вырожденный случай совпадения собственных значений (когда возникает
+дополнительная мода~$k$ и Лемма~\ref{lem:sign-changes} даёт на одну
+знакоперемену больше). Тем самым оценка
+$K_{\mathrm{eff}} \le d_{\mathrm{state}} + 2$ установлена строго.
 \end{proof}
 
 \begin{remark}\label{rem:general-dstate}
@@ -499,11 +500,11 @@ $$
     \le \frac{\mu^{*}}{L}\,\varepsilon.
 $$
 Комбинируя с геометрическим соотношением~\eqref{eq:app-b-dx},
-$$
+\begin{align*}
     G^{*} = \frac{\rho_{\max} - \rho_{\min}}{L}\,|\Delta\bar{x}|
-    \le \frac{\rho_{\max} - \rho_{\min}}{L}\cdot\frac{\mu^{*}\varepsilon}{L}
-    = \frac{(\rho_{\max} - \rho_{\min})\,\mu^{*}\,\varepsilon}{L^{2}}.
-$$
+    &\;\le\; \frac{\rho_{\max} - \rho_{\min}}{L}\cdot\frac{\mu^{*}\varepsilon}{L} \\
+    &\;=\; \frac{(\rho_{\max} - \rho_{\min})\,\mu^{*}\,\varepsilon}{L^{2}}.
+\end{align*}
 Это и есть необходимое условие достижимости (с явной зависимостью от~$L^{2}$;
 оценка~\eqref{eq:reachability} основного текста использует нормировку
 положения, при которой $L$ входит в первой степени). Утверждение~(а)
