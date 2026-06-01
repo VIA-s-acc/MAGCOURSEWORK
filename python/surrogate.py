@@ -104,8 +104,10 @@ class SurrogateModel:
         for i, V in enumerate(self.voltages):
             for j, T_frames in enumerate(self.durations_frames):
                 T_sec = T_frames / self.f_frame
-                # Энергия Lin 2024: ½ C ΔV² f T, где f — частота кадров,
-                # ΔV — амплитуда (от vcom). E в мДж.
+                # Энергия фазы (формула 4.13 курсовой): E = ½ C V² f T, где
+                # V = (V_source - vcom) — амплитуда напряжения фазы от опорного
+                # уровня vcom=0, f — частота кадров, T — длительность. E в мДж.
+                # Размерность Ф·В²·Гц·с = Дж; функционал аддитивен по фазам.
                 delta_V = V - vcom
                 self.e_grid[i, j] = 0.5 * c_eff_F * delta_V * delta_V * self.f_frame * T_sec * 1e3
 
