@@ -44,6 +44,11 @@ OP_REFRESH_CUSTOM_LUT  = 0x0B
 OP_WRITE_LUT_DYNAMIC   = 0x0C
 OP_WRITE_REGISTER      = 0x0D
 OP_BENCH_RUN           = 0x0E
+OP_BENCH_FACTORY       = 0x0F
+
+# 0x22-байты заводского refresh для BENCH_FACTORY.
+REFRESH_FULL_F7 = 0xF7   # B0: полный заводский refresh (load temp + Mode 1)
+REFRESH_FAST_C7 = 0xC7   # B1: Mode 1 без перезагрузки LUT (после init_partial_fast)
 
 # ---- Статусы --------------------------------------------------------------
 
@@ -253,6 +258,28 @@ class EpdBridge:
         n_samples = (n_raw[0] << 8) | n_raw[1]
         body = self._recv(n_samples * 8)
         # parse_bench_response ожидает n_samples + payload — пересоберём
+        return parse_bench_response(n_raw + body)
+
+    def bench_factory(self, image: bytes, mode_byte: int = REFRESH_FULL_F7) -> Trace:
+        """Опкод 0x0F: INA-трасса ЗАВОДСКОГО refresh (baseline B0/B1).
+
+        В отличие от ``bench_run``, custom LUT не пишется — используется
+        заводская OTP-waveform. INIT (обычный для B0 или fast для B1) должен
+        быть выполнен ДО вызова: для B0 — ``init()`` + ``mode_byte=0xF7``;
+        для B1 — ``init_partial_fast()`` + ``mode_byte=0xC7``.
+        """
+        if len(image) != EPD_FRAME_SIZE:
+            raise ValueError(f"image must be {EPD_FRAME_SIZE} bytes")
+        if mode_byte not in (REFRESH_FULL_F7, REFRESH_FAST_C7):
+            raise ValueError(f"mode_byte must be 0xF7 or 0xC7, got {mode_byte:#x}")
+
+        payload = bytes([OP_BENCH_FACTORY]) + image + bytes([mode_byte])
+        self._send(payload)
+        self._check_status(OP_BENCH_FACTORY)
+
+        n_raw = self._recv(2)
+        n_samples = (n_raw[0] << 8) | n_raw[1]
+        body = self._recv(n_samples * 8)
         return parse_bench_response(n_raw + body)
 
     def ina_read(self) -> dict[str, float]:

@@ -23,8 +23,10 @@
 //    0x0B REFRESH_CUSTOM_LUT        — refresh с уже записанной LUT через 0xC7
 //                                    (КЛЮЧЕВОЙ ФИКС: НЕ перезагружает LUT из OTP)
 //
-//  (Опкоды 0x0C-0x0E добавляются в B2: WRITE_LUT_DYNAMIC, WRITE_REGISTER,
-//   BENCH_RUN — см. ниже.)
+//  (Опкоды 0x0C-0x0F: WRITE_LUT_DYNAMIC, WRITE_REGISTER, BENCH_RUN,
+//   BENCH_FACTORY — см. ниже.)
+//    0x0F BENCH_FACTORY             — INA-трасса заводского refresh (B0/B1):
+//                                    [image 4000][0x22-byte] → trace
 //
 //  Сборка: Arduino IDE → Board: ESP32 Dev Module, Flash 80MHz, partition default
 //  Прошивка: usbserial, port = /dev/cu.SLAB_USBtoUART (macOS, драйвер CP2102)
@@ -93,6 +95,7 @@ constexpr uint8_t OP_REFRESH_CUSTOM_LUT  = 0x0B;
 constexpr uint8_t OP_WRITE_LUT_DYNAMIC   = 0x0C;   // принять LUT + сразу refresh с 0xC7
 constexpr uint8_t OP_WRITE_REGISTER      = 0x0D;   // произвольная запись регистра SSD1680
 constexpr uint8_t OP_BENCH_RUN           = 0x0E;   // benchmark: LUT + image + N повторов + INA-трасса
+constexpr uint8_t OP_BENCH_FACTORY       = 0x0F;   // benchmark заводского refresh (B0/B1): image + 0x22-byte + INA-трасса
 
 // ---- Статусы --------------------------------------------------------------
 constexpr uint16_t STATUS_OK             = 0x0000;
@@ -110,7 +113,7 @@ constexpr uint32_t I2C_FREQ              = 400000UL;     // 400 кГц fast mode
 constexpr size_t   SERIAL_RX_BUFFER      = 8192;         // 8 KB — вмещает BENCH_RUN payload (4154 B) с запасом
 
 // ---- Версия прошивки ------------------------------------------------------
-constexpr uint16_t FW_VERSION            = 0x0101;       // major=1, minor=01
+constexpr uint16_t FW_VERSION            = 0x0102;       // major=1, minor=02 (+ BENCH_FACTORY)
 
 // ---- Verbose logging (DEBUG) ----------------------------------------------
 // Включать DEBUG только при отладке — Serial.print замусоривает binary-протокол!
@@ -576,6 +579,51 @@ void dispatch(uint8_t opcode) {
             }
 
             // Ответ
+            send_status(STATUS_OK);
+            Serial.write((uint8_t)((total_samples >> 8) & 0xFF));
+            Serial.write((uint8_t)(total_samples & 0xFF));
+            Serial.write((const uint8_t*)bench_buf, (size_t)total_samples * sizeof(BenchSample));
+            Serial.flush();
+            break;
+        }
+
+        case OP_BENCH_FACTORY: {
+            // Бенчмарк ЗАВОДСКОГО refresh (baseline B0/B1) с INA-трассой.
+            // В отличие от BENCH_RUN, НЕ пишет custom LUT — использует
+            // заводскую (OTP) waveform, выбранную по 0x22-байту:
+            //   mode 0xF7 → full factory (B0, загрузка темп. + DISPLAY Mode 1)
+            //   mode 0xC7 → DISPLAY Mode 1 без перезагрузки (B1, после init_fast)
+            // INIT (обычный 0x01 для B0 либо fast 0x0A для B1) выполняется
+            // ОТДЕЛЬНЫМ опкодом ДО вызова BENCH_FACTORY.
+            //
+            // Запрос:  [0x0F][image 4000][mode 1]   = 4001 байт после opcode
+            // Ответ:   [status 2][n_samples 2][trace n_samples*8]
+            if (!read_bytes(frame_buf, EPD_FRAME_SIZE))        { send_status(STATUS_TIMEOUT_RX); break; }
+            uint8_t mode_byte;
+            if (!read_bytes(&mode_byte, 1))                    { send_status(STATUS_TIMEOUT_RX); break; }
+
+            if (!epd_write_frame(frame_buf, EPD_FRAME_SIZE))   { send_status(STATUS_BAD_OPCODE); break; }
+
+            uint16_t total_samples = 0;
+            uint32_t bench_t0 = micros();
+
+            // Старт заводского refresh (0x22 = mode_byte + 0x20). BUSY поднимется.
+            epd_send_command(0x22); epd_send_data(mode_byte);
+            epd_send_command(0x20);
+
+            uint32_t deadline = millis() + BUSY_TIMEOUT_MS;
+            while (digitalRead(PIN_BUSY) == HIGH) {
+                if (millis() > deadline) { send_status(STATUS_TIMEOUT_BUSY); return; }
+                if (total_samples >= BENCH_MAX_SAMPLES) break;
+                InaReadout r;
+                if (ina219_read_all(&r)) {
+                    bench_buf[total_samples].t_us  = micros() - bench_t0;
+                    bench_buf[total_samples].i_raw = r.current_raw;
+                    bench_buf[total_samples].p_raw = r.power_raw;
+                    total_samples++;
+                }
+            }
+
             send_status(STATUS_OK);
             Serial.write((uint8_t)((total_samples >> 8) & 0xFF));
             Serial.write((uint8_t)(total_samples & 0xFF));
