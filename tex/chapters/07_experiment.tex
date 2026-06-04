@@ -32,50 +32,27 @@
 
 \begin{figure}[ht]
     \centering
-    \input{figures/diagrams/photo_stand.tex}
-    \caption{Схема фотостанда для измерения reflectance EPD-панели:
-        картонный корпус с чёрными матовыми стенками и дном устраняет
-        паразитные отражения; телефон лежит сверху коробки камерой вниз
-        через отверстие в верхе; боковые источники света дают мягкое
-        освещение под углом, минимизирующее блики на глянцевой
-        поверхности EPD; панель размещается лицом вверх в центре дна на
-        расстоянии 15--20\,см от объектива; необязательный калибровочный
-        квадрат рядом с EPD служит для нормировки яркости снимков}
+    \scalebox{0.5}{\input{figures/diagrams/photo_stand.tex}}
+    \caption{Схема фотостанда: картонный корпус с чёрными матовыми стенками
+        устраняет паразитные отражения; телефон сверху камерой вниз; боковые
+        источники света дают диффузную подсветку под углом; панель лицом
+        вверх на расстоянии 15--20\,см; калибровочный квадрат~--- для
+        нормировки яркости}
     \label{fig:photo-stand}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/raw_photos/stand_overview.jpg}
-    \caption{Общий вид собранного стенда (съёмка сверху): плата
-        ESP32~DevKit и датчик тока INA219 закреплены на краю картонного
-        корпуса; шлейф соединяет ESP32 с панелью Waveshare~2.13"~V4,
-        лежащей лицом вверх по центру; справа~--- белый калибровочный
-        квадрат; по бокам~--- USB-светодиодные источники диффузной подсветки}
-    \label{fig:stand-photo}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[height=42mm]{figures/raw_photos/epd_white.jpg}
-    \hspace{8mm}
-    \includegraphics[height=42mm]{figures/raw_photos/epd_checker.jpg}
-    \caption{Снимки панели на стенде (слева~--- чистое белое поле WW после
-        полного заводского обновления, низкий контраст e-ink
-        $\rho_{\max} \approx 0{,}40$; справа~--- отрисованный тестовый
-        паттерн, демонстрация корректной пиксельной адресации). Рядом с
-        панелью виден белый калибровочный квадрат для яркостной нормировки}
-    \label{fig:epd-captures}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\textwidth]{figures/raw_photos/roi_overlay.jpg}
-    \caption{Калибровка области интереса (ROI) по эталонному снимку белого
-        поля: красной рамкой выделена активная область дисплея
-        ($122 \times 250$ после выпрямления), зелёной~--- белый
-        калибровочный квадрат. Координаты определяются автоматически
-        (скрипт \texttt{scripts/calibrate\_roi.py}) и фиксируются для всей
-        измерительной кампании, поскольку камера и панель неподвижны}
-    \label{fig:roi-overlay}
+    \includegraphics[height=38mm]{figures/raw_photos/stand_overview.jpg}\hfill
+    \includegraphics[height=38mm]{figures/raw_photos/roi_overlay.jpg}\hfill
+    \includegraphics[height=38mm]{figures/raw_photos/epd_white.jpg}\hfill
+    \includegraphics[height=38mm]{figures/raw_photos/epd_checker.jpg}
+    \caption{Стенд и калибровка (слева направо): общий вид сверху
+        (ESP32, INA219, панель, калибровочный квадрат, боковые лампы);
+        ROI-разметка по эталону (красная рамка~--- активная область
+        $122\times250$, зелёная~--- белый квадрат, скрипт
+        \texttt{calibrate\_roi.py}); чистое белое поле~WW (низкий контраст
+        e-ink $\rho_{\max}\approx0{,}40$); отрисованный тестовый паттерн
+        (корректная пиксельная адресация)}
+    \label{fig:stand-captures}
 \end{figure}
