@@ -21,11 +21,17 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Камера для фотостанда (гл. 7). Нужна только для потокового/UVC-захвата;
+# IP Webcam по URL вида http://IP:8080/shot.jpg работает без opencv.
+camera = [
+    "opencv-python>=4.9",
+]
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "ruff>=0.4",
     "mypy>=1.10",
+    "opencv-python>=4.9",
 ]
 
 [build-system]

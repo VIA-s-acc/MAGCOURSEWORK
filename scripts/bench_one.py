@@ -57,27 +57,41 @@ def default_balanced_lut() -> bytes:
     return lut.encode()
 
 
-def capture_photo(camera: int | None, camera_url: str | None, settle_s: float = 1.0):
-    """Снять кадр с вебкамеры (индекс) или HTTP-потока (url). Возвращает PIL.Image.
+def _looks_like_snapshot_url(url: str) -> bool:
+    return url.lower().rstrip("/").endswith((".jpg", ".jpeg", ".png", "shot.jpg"))
 
-    Требует opencv-python (cv2). Телефон-вебкамеры (Iriun/DroidCam/Camo)
-    видны как обычная камера по индексу; IP Webcam — по URL кадра.
+
+def capture_photo(camera: int | None, camera_url: str | None, settle_s: float = 1.0):
+    """Снять кадр с телефона-камеры. Возвращает PIL.Image.
+
+    Три режима:
+    - ``camera_url`` оканчивается на .jpg (IP Webcam snapshot, напр.
+      http://IP:8080/shot.jpg) — забирается по HTTP без opencv;
+    - ``camera_url`` — MJPEG-поток (http://IP:8080/video) — через cv2;
+    - ``camera`` — индекс UVC-вебкамеры (DroidCam/Iriun/нативный режим) — через cv2.
     """
+    # Снимок по HTTP — самый простой путь, не требует opencv.
+    if camera_url and _looks_like_snapshot_url(camera_url):
+        import urllib.request  # noqa: PLC0415
+        from io import BytesIO  # noqa: PLC0415
+        with urllib.request.urlopen(camera_url, timeout=10) as resp:
+            data = resp.read()
+        return Image.open(BytesIO(data)).convert("RGB")
+
+    # Иначе — поток/вебкамера через opencv.
     try:
         import cv2  # noqa: PLC0415
     except ImportError:
         raise RuntimeError(
-            "Для съёмки нужен opencv-python: pip install opencv-python"
+            "Для потока/вебкамеры нужен opencv-python: pip install opencv-python.\n"
+            "Либо используйте IP Webcam и URL вида http://IP:8080/shot.jpg (без opencv)."
         )
-    if camera_url:
-        cap = cv2.VideoCapture(camera_url)
-    else:
-        cap = cv2.VideoCapture(camera if camera is not None else 0)
+    cap = cv2.VideoCapture(camera_url if camera_url else (camera if camera is not None else 0))
     if not cap.isOpened():
         raise RuntimeError(f"Не удалось открыть камеру (camera={camera}, url={camera_url})")
-    time.sleep(settle_s)  # автоэкспозиция/фокус
+    time.sleep(settle_s)
     ok, frame = None, None
-    for _ in range(5):  # сбросить буфер, взять свежий кадр
+    for _ in range(5):
         ok, frame = cap.read()
     cap.release()
     if not ok or frame is None:
