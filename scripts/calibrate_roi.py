@@ -72,6 +72,43 @@ def detect_panel_and_patch(
     return panel, patch
 
 
+def select_rois_interactive(path: str, disp_scale: float = 0.6
+                            ) -> tuple[list[int], list[int]]:
+    """Интерактивно выделить мышью 2 области на кадре (окно OpenCV).
+
+    Шаг 1: выделить активную область ДИСПЛЕЯ (без синей рамки) → Enter/Space.
+    Шаг 2: выделить БЕЛЫЙ калибровочный КВАДРАТ → Enter/Space.
+    Возвращает (panel_bbox, white_bbox) в координатах полного снимка.
+    """
+    try:
+        import cv2  # noqa: PLC0415
+    except ImportError:
+        raise RuntimeError("Нужен opencv-python: pip install -e \".[dev]\" (или \".[camera]\")")
+
+    im = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
+    rgb = np.asarray(im)
+    bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+    H, W = bgr.shape[:2]
+    disp = cv2.resize(bgr, (int(W * disp_scale), int(H * disp_scale)))
+
+    print("\n>>> Выдели рамкой АКТИВНУЮ ОБЛАСТЬ ДИСПЛЕЯ (без синей кромки), затем Enter/Space")
+    r1 = cv2.selectROI("1/2: ДИСПЛЕЙ (Enter)", disp, showCrosshair=True, fromCenter=False)
+    cv2.destroyAllWindows()
+    print(">>> Теперь выдели БЕЛЫЙ КАЛИБРОВОЧНЫЙ КВАДРАТ, затем Enter/Space")
+    r2 = cv2.selectROI("2/2: БЕЛЫЙ КВАДРАТ (Enter)", disp, showCrosshair=True, fromCenter=False)
+    cv2.destroyAllWindows()
+
+    if r1[2] == 0 or r2[2] == 0:
+        raise RuntimeError("Область не выделена (нулевая ширина) — повтори калибровку")
+
+    s = 1.0 / disp_scale
+    def unscale(r):
+        x, y, w, h = r
+        return [int(round(x * s)), int(round(y * s)),
+                int(round((x + w) * s)), int(round((y + h) * s))]
+    return unscale(r1), unscale(r2)
+
+
 def detect_rotation(panel_bbox: tuple[int, int, int, int]) -> int:
     """Определить поворот для приведения панели к портрету 122×250.
 
@@ -113,6 +150,8 @@ def main() -> int:
                     help="инсет рамки белого квадрата")
     ap.add_argument("--rotate", type=int, default=None, choices=[0, 90, 180, 270],
                     help="принудительный поворот (иначе авто по ориентации bbox)")
+    ap.add_argument("--interactive", "-i", action="store_true",
+                    help="выделить области мышью в окне (надёжнее авто-детекта)")
     ap.add_argument("--show", action="store_true", help="сохранить проверочный кроп")
     args = ap.parse_args()
 
@@ -120,9 +159,13 @@ def main() -> int:
     gray = load_gray(args.ref)
     logger.info("снимок %dx%d, mean=%.3f", gray.shape[1], gray.shape[0], gray.mean())
 
-    disp_raw, white_raw = detect_panel_and_patch(gray)
-    disp = inset(disp_raw, *args.inset_disp)
-    white = inset(white_raw, *args.inset_white)
+    if args.interactive:
+        disp, white = select_rois_interactive(args.ref)
+        disp_raw = disp  # инсет не применяем — пользователь выделил точно
+    else:
+        disp_raw, white_raw = detect_panel_and_patch(gray)
+        disp = inset(disp_raw, *args.inset_disp)
+        white = inset(white_raw, *args.inset_white)
     rotate = args.rotate if args.rotate is not None else detect_rotation(disp_raw)
 
     logger.info("дисплей bbox=%s (%dx%d), поворот=%d°",
@@ -147,15 +190,19 @@ def main() -> int:
     draw_overlay(args.ref, disp, white, overlay_path)
 
     from python.photo_pipeline import build_capture
-    cap = build_capture(gray, panel_bbox=tuple(disp), white_patch_bbox=tuple(white),
-                        rotate_deg=rotate)
-    chk = REPO / "data" / "bench" / "roi_check.png"
-    Image.fromarray((np.clip(cap.reflectance, 0, 1) * 255).astype("uint8"), "L") \
-        .resize((PANEL_W * 3, PANEL_H * 3)).save(chk)
-    logger.info("проверочный кроп: %s (white_level=%.3f, mean=%.3f)",
-                chk, cap.white_level, cap.reflectance.mean())
+    # Сохраним проверочные кропы для ОБОИХ поворотов (90 и 270) — направление
+    # уточняется по асимметричному кадру; основной = выбранный rotate.
+    for rdeg in sorted({rotate, (rotate + 180) % 360}):
+        cap = build_capture(gray, panel_bbox=tuple(disp), white_patch_bbox=tuple(white),
+                            rotate_deg=rdeg)
+        chk = REPO / "data" / "bench" / f"roi_check_rot{rdeg}.png"
+        Image.fromarray((np.clip(cap.reflectance, 0, 1) * 255).astype("uint8"), "L") \
+            .resize((PANEL_W * 3, PANEL_H * 3)).save(chk)
+        logger.info("кроп rot=%d°: %s (white=%.3f, mean=%.3f)",
+                    rdeg, chk.name, cap.white_level, cap.reflectance.mean())
 
-    print(f"\nROI откалиброван. Конфиг: {cfg_path}\nOverlay: {overlay_path}\nКроп: {chk}")
+    print(f"\nROI откалиброван. Конфиг: {cfg_path}\nOverlay: {overlay_path}")
+    print("Проверочные кропы (rotXX.png) — в data/bench/")
     return 0
 
 
