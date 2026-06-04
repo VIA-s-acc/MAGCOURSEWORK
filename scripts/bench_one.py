@@ -110,6 +110,7 @@ def compute_ghost(photo: Image.Image, scenario_img: np.ndarray) -> dict[str, flo
         gray,
         panel_bbox=tuple(cfg["panel_bbox"]),
         white_patch_bbox=tuple(cfg["white_patch_bbox"]),
+        rotate_deg=int(cfg.get("rotate_deg", 0)),
     )
     return compare_to_target(cap, scenario_img)
 

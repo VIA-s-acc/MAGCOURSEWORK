@@ -100,19 +100,27 @@ def extract_roi(
 
 
 def crop_roi(gray: np.ndarray, bbox: tuple[int, int, int, int],
-             out_w: int = PANEL_W, out_h: int = PANEL_H) -> np.ndarray:
-    """Упрощённый ROI без перспективы: прямоугольный кроп + resize.
+             out_w: int = PANEL_W, out_h: int = PANEL_H,
+             rotate_deg: int = 0) -> np.ndarray:
+    """Упрощённый ROI без перспективы: прямоугольный кроп + поворот + resize.
 
     bbox = (x0, y0, x1, y1) в пикселях исходного снимка.
-    Применим, когда камера строго перпендикулярна панели.
+    rotate_deg ∈ {0, 90, 180, 270} — поворот вырезанной области перед
+    масштабированием (нужен, когда панель снята в ландшафтной ориентации,
+    а целевой кадр портретный 122×250). Применим, когда камера строго
+    перпендикулярна панели.
     """
+    if rotate_deg not in (0, 90, 180, 270):
+        raise ValueError(f"rotate_deg must be 0/90/180/270, got {rotate_deg}")
     x0, y0, x1, y1 = bbox
     if not (0 <= x0 < x1 <= gray.shape[1] and 0 <= y0 < y1 <= gray.shape[0]):
         raise ValueError(f"bbox {bbox} вне границ изображения {gray.shape}")
     sub = gray[y0:y1, x0:x1]
-    img = Image.fromarray((np.clip(sub, 0, 1) * 255).astype(np.uint8)).resize(
-        (out_w, out_h), Image.BILINEAR
-    )
+    pil = Image.fromarray((np.clip(sub, 0, 1) * 255).astype(np.uint8))
+    if rotate_deg:
+        # PIL.rotate против часовой; expand=True сохраняет всю область.
+        pil = pil.rotate(rotate_deg, expand=True)
+    img = pil.resize((out_w, out_h), Image.BILINEAR)
     return np.asarray(img, dtype=np.float64) / 255.0
 
 
@@ -130,10 +138,12 @@ def build_capture(
     panel_corners: list[tuple[float, float]] | None = None,
     panel_bbox: tuple[int, int, int, int] | None = None,
     white_patch_bbox: tuple[int, int, int, int] | None = None,
+    rotate_deg: int = 0,
 ) -> Capture:
     """Собрать нормированный Capture из grayscale-снимка.
 
-    Геометрия: либо `panel_corners` (перспектива), либо `panel_bbox` (кроп).
+    Геометрия: либо `panel_corners` (перспектива), либо `panel_bbox` (кроп);
+    `rotate_deg` поворачивает вырезанную область (для ландшафтных снимков).
     Яркостная нормировка: если задан `white_patch_bbox`, reflectance делится
     на яркость белого квадрата (компенсация колебаний освещения между
     кадрами); иначе нормировка не выполняется.
@@ -144,7 +154,7 @@ def build_capture(
     if panel_corners is not None:
         roi = extract_roi(gray, panel_corners)
     else:
-        roi = crop_roi(gray, panel_bbox)  # type: ignore[arg-type]
+        roi = crop_roi(gray, panel_bbox, rotate_deg=rotate_deg)  # type: ignore[arg-type]
 
     white_level = 1.0
     if white_patch_bbox is not None:
