@@ -25,13 +25,10 @@ import numpy as np
 from PIL import Image
 from skimage.transform import ProjectiveTransform, warp
 
+from python.frames import PANEL_H, PANEL_W  # единый источник: 122×250 (портрет)
 from python.metrics import residual, ssim_score
 
 logger = logging.getLogger(__name__)
-
-# Нативное разрешение Waveshare 2.13" V4.
-PANEL_W = 250
-PANEL_H = 122
 
 
 @dataclass(frozen=True)
