@@ -1,0 +1,33 @@
+{
+  "cycles": 8,
+  "rows": [
+    {
+      "name": "B1_fast",
+      "balanced": true,
+      "n_frames": null,
+      "ghost_white": 0.10515776068869831,
+      "contrast_after": 0.3598584060796276
+    },
+    {
+      "name": "noosc",
+      "balanced": true,
+      "n_frames": 31,
+      "ghost_white": 0.1053265611352926,
+      "contrast_after": 0.3258460349009239
+    },
+    {
+      "name": "drive_lng",
+      "balanced": true,
+      "n_frames": 51,
+      "ghost_white": 0.09995667968106858,
+      "contrast_after": 0.34626541429244084
+    },
+    {
+      "name": "final_hv",
+      "balanced": false,
+      "n_frames": 29,
+      "ghost_white": 0.09935075757757461,
+      "contrast_after": 0.3646148158751823
+    }
+  ]
+}

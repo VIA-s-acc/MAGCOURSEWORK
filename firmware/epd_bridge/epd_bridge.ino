@@ -96,6 +96,9 @@ constexpr uint8_t OP_WRITE_LUT_DYNAMIC   = 0x0C;   // принять LUT + ср�
 constexpr uint8_t OP_WRITE_REGISTER      = 0x0D;   // произвольная запись регистра SSD1680
 constexpr uint8_t OP_BENCH_RUN           = 0x0E;   // benchmark: LUT + image + N повторов + INA-трасса
 constexpr uint8_t OP_BENCH_FACTORY       = 0x0F;   // benchmark заводского refresh (B0/B1): image + 0x22-byte + INA-трасса
+constexpr uint8_t OP_PART_BASE           = 0x10;   // partial: записать базовый кадр в RAM 0x24+0x26 + full refresh
+constexpr uint8_t OP_BENCH_PARTIAL       = 0x11;   // partial: LUT+cfg+image, безмерцательный refresh + INA-трасса
+constexpr uint8_t OP_WRITE_OLD           = 0x12;   // partial: записать «предыдущий» кадр в RAM 0x26 (без refresh)
 
 // ---- Статусы --------------------------------------------------------------
 constexpr uint16_t STATUS_OK             = 0x0000;
@@ -113,7 +116,7 @@ constexpr uint32_t I2C_FREQ              = 400000UL;     // 400 кГц fast mode
 constexpr size_t   SERIAL_RX_BUFFER      = 8192;         // 8 KB — вмещает BENCH_RUN payload (4154 B) с запасом
 
 // ---- Версия прошивки ------------------------------------------------------
-constexpr uint16_t FW_VERSION            = 0x0102;       // major=1, minor=02 (+ BENCH_FACTORY)
+constexpr uint16_t FW_VERSION            = 0x0105;       // major=1, minor=05 (+ WRITE_OLD для секв. partial)
 
 // ---- Verbose logging (DEBUG) ----------------------------------------------
 // Включать DEBUG только при отладке — Serial.print замусоривает binary-протокол!
@@ -288,6 +291,14 @@ bool epd_write_frame(const uint8_t* buf, size_t len) {
         return false;
     }
     epd_send_command(0x24);                                  // Write RAM (B/W)
+    epd_send_data_buffer(buf, len);
+    return true;
+}
+
+// Запись 4000-байтного buffer в RAM 0x26 (old/red) — базовый кадр для partial.
+bool epd_write_frame_old(const uint8_t* buf, size_t len) {
+    if (len != EPD_FRAME_SIZE) return false;
+    epd_send_command(0x26);                                  // Write RAM (OLD)
     epd_send_data_buffer(buf, len);
     return true;
 }
@@ -629,6 +640,92 @@ void dispatch(uint8_t opcode) {
             Serial.write((uint8_t)(total_samples & 0xFF));
             Serial.write((const uint8_t*)bench_buf, (size_t)total_samples * sizeof(BenchSample));
             Serial.flush();
+            break;
+        }
+
+        case OP_PART_BASE: {
+            // Базовый кадр для partial: записать image в RAM 0x24 И 0x26 + полный
+            // refresh (0xC7). Устанавливает «предыдущее» состояние, относительно
+            // которого partial-обновление двигает лишь изменившиеся пиксели.
+            // INIT (0x01) должен быть выполнен ДО. Запрос: [0x10][image 4000].
+            if (!read_bytes(frame_buf, EPD_FRAME_SIZE))        { send_status(STATUS_TIMEOUT_RX); break; }
+            if (!epd_write_frame(frame_buf, EPD_FRAME_SIZE))   { send_status(STATUS_BAD_OPCODE); break; }
+            if (!epd_write_frame_old(frame_buf, EPD_FRAME_SIZE)){ send_status(STATUS_BAD_OPCODE); break; }
+            // 0xF7 — заводский полный refresh (грузит OTP-LUT + температуру):
+            // гарантированно чистит панель независимо от содержимого регистра 0x32.
+            epd_send_command(0x22); epd_send_data(0xF7);
+            epd_send_command(0x20);
+            if (!epd_wait_busy())                              { send_status(STATUS_TIMEOUT_BUSY); break; }
+            send_status(STATUS_OK);
+            break;
+        }
+
+        case OP_BENCH_PARTIAL: {
+            // Бенчмарк ЧАСТИЧНОГО (безмерцательного) обновления с INA-трассой.
+            // Последовательность по драйверу Waveshare V3 displayPartial, БЕЗ
+            // SWRESET (чтобы сохранить базовый кадр в RAM 0x26 от OP_PART_BASE).
+            // Запрос: [0x11][lut 153][cfg 6][mode 1][image 4000].
+            //   cfg = [0x3F, 0x03(gate), 0x04a, 0x04b, 0x04c, 0x2C(VCOM)]
+            //   mode = байт 0x22 для partial (V3: 0x0F качество / 0x0C быстро / 0xCF)
+            // Ответ: [status 2][n_samples 2][trace n_samples*8]
+            uint8_t cfg[6]; uint8_t mode_byte;
+            if (!read_bytes(lut_buf, EPD_LUT_SIZE))            { send_status(STATUS_TIMEOUT_RX); break; }
+            if (!read_bytes(cfg, 6))                           { send_status(STATUS_TIMEOUT_RX); break; }
+            if (!read_bytes(&mode_byte, 1))                    { send_status(STATUS_TIMEOUT_RX); break; }
+            if (!read_bytes(frame_buf, EPD_FRAME_SIZE))        { send_status(STATUS_TIMEOUT_RX); break; }
+
+            // SetLut: 153-байт LUT + хвост напряжений.
+            epd_write_lut(lut_buf, EPD_LUT_SIZE);
+            epd_send_command(0x3F); epd_send_data(cfg[0]);
+            epd_send_command(0x03); epd_send_data(cfg[1]);
+            epd_send_command(0x04); epd_send_data(cfg[2]); epd_send_data(cfg[3]); epd_send_data(cfg[4]);
+            epd_send_command(0x2C); epd_send_data(cfg[5]);
+
+            // Конфигурация partial (V3): 0x37 + 10 байт, граница 0x3C=0x80, prep 0x22=0xC0.
+            epd_send_command(0x37);
+            epd_send_data(0x00); epd_send_data(0x00); epd_send_data(0x00); epd_send_data(0x00);
+            epd_send_data(0x00); epd_send_data(0x40); epd_send_data(0x00); epd_send_data(0x00);
+            epd_send_data(0x00); epd_send_data(0x00);
+            epd_send_command(0x3C); epd_send_data(0x80);
+            epd_send_command(0x22); epd_send_data(0xC0);
+            epd_send_command(0x20);
+            if (!epd_wait_busy())                              { send_status(STATUS_TIMEOUT_BUSY); break; }
+
+            // Новый кадр в RAM 0x24 (0x26 хранит базовый от PART_BASE).
+            if (!epd_write_frame(frame_buf, EPD_FRAME_SIZE))   { send_status(STATUS_BAD_OPCODE); break; }
+
+            // Старт partial-обновления (0x22=mode + 0x20) с INA-семплированием.
+            uint16_t total_samples = 0;
+            uint32_t bench_t0 = micros();
+            epd_send_command(0x22); epd_send_data(mode_byte);
+            epd_send_command(0x20);
+            uint32_t deadline = millis() + BUSY_TIMEOUT_MS;
+            while (digitalRead(PIN_BUSY) == HIGH) {
+                if (millis() > deadline) { send_status(STATUS_TIMEOUT_BUSY); return; }
+                if (total_samples >= BENCH_MAX_SAMPLES) break;
+                InaReadout r;
+                if (ina219_read_all(&r)) {
+                    bench_buf[total_samples].t_us  = micros() - bench_t0;
+                    bench_buf[total_samples].i_raw = r.current_raw;
+                    bench_buf[total_samples].p_raw = r.power_raw;
+                    total_samples++;
+                }
+            }
+            send_status(STATUS_OK);
+            Serial.write((uint8_t)((total_samples >> 8) & 0xFF));
+            Serial.write((uint8_t)(total_samples & 0xFF));
+            Serial.write((const uint8_t*)bench_buf, (size_t)total_samples * sizeof(BenchSample));
+            Serial.flush();
+            break;
+        }
+
+        case OP_WRITE_OLD: {
+            // Записать «предыдущий» кадр в RAM 0x26 (без refresh) — для корректного
+            // последовательного partial: контроллер диффит 0x24(новый) vs 0x26(старый).
+            // Запрос: [0x12][image 4000].
+            if (!read_bytes(frame_buf, EPD_FRAME_SIZE))        { send_status(STATUS_TIMEOUT_RX); break; }
+            if (!epd_write_frame_old(frame_buf, EPD_FRAME_SIZE)){ send_status(STATUS_BAD_OPCODE); break; }
+            send_status(STATUS_OK);
             break;
         }
 

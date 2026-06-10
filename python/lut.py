@@ -274,6 +274,64 @@ class Lut:
         """Полностью нулевая LUT (все фазы — VCOM, TP=0, без активности)."""
         return cls()
 
+    @classmethod
+    def from_waveform(
+        cls,
+        voltages: "tuple[float, ...]",
+        durations: "tuple[int, ...]",
+        voltage_map: dict[int, float] | None = None,
+    ) -> Lut:
+        """Построить LUT из bang-bang waveform (V[k], T[k]) теоремы 4.1.
+
+        Связывает оптимум из M5 (:class:`python.optimizer.Waveform`) с
+        аппаратной waveform SSD1680. Каждая активная фаза k waveform
+        кодируется как отдельная phase n LUT: напряжение V[k] → ближайший
+        источник Source по ``voltage_map``, длительность T[k] кадров →
+        TP[n, A] (sub-frame A несёт напряжение, B/C/D — VCOM с TP=0).
+
+        Waveform одинакова для всех 5 sub-LUT (бинарная Ч/Б-панель: переход
+        задаётся одной и той же последовательностью независимо от исходного
+        уровня серого).
+
+        Параметры:
+            voltages: напряжения фаз [В] (длина = K_eff ≤ 12).
+            durations: длительности фаз в кадрах (длина = len(voltages)).
+            voltage_map: {Source.value: вольты}; по умолчанию номинальные
+                {VCOM:0, VSH1:+15, VSL:-15, VSH2:+5}.
+
+        Возвращает: :class:`Lut`, готовую к ``.encode()``.
+        """
+        if len(voltages) != len(durations):
+            raise ValueError(
+                f"len(voltages)={len(voltages)} != len(durations)={len(durations)}"
+            )
+        if len(voltages) > N_PHASES:
+            raise ValueError(f"K_eff={len(voltages)} > {N_PHASES} фаз LUT")
+        if voltage_map is None:
+            voltage_map = {
+                Source.VCOM.value: 0.0,
+                Source.VSH1.value: 15.0,
+                Source.VSL.value: -15.0,
+                Source.VSH2.value: 5.0,
+            }
+        # Обратное отображение «вольты → код источника» по ближайшему номиналу.
+        codes = np.array(list(voltage_map.keys()))
+        volts = np.array(list(voltage_map.values()))
+
+        def nearest_source(v: float) -> int:
+            return int(codes[int(np.argmin(np.abs(volts - v)))])
+
+        lut = cls()
+        for n, (v, t) in enumerate(zip(voltages, durations)):
+            t_int = int(round(t))
+            if not (0 <= t_int <= 255):
+                raise ValueError(f"фаза {n}: T={t} кадров вне диапазона TP 0..255")
+            src = nearest_source(float(v))
+            lut.vs[:, n, 0] = src  # sub-frame A несёт напряжение, во всех sub-LUT
+            lut.tp[n, 0] = t_int
+        logger.debug("Lut.from_waveform: K_eff=%d phases encoded", len(voltages))
+        return lut
+
     def __repr__(self) -> str:
         active_phases = int(np.sum(np.any(self.tp > 0, axis=1)))
         return (

@@ -1,0 +1,13 @@
+{
+  "baseline": "B0",
+  "scenario": "04_checker",
+  "energy_mj": 14.840205000000003,
+  "latency_s": 2.2705509999999998,
+  "peak_ma": 9.5,
+  "n_samples": 2839,
+  "ghost": {
+    "ssim": 0.02741606215113048,
+    "residual": 0.5007628120455059,
+    "ghost_ssim": 0.9725839378488695
+  }
+}

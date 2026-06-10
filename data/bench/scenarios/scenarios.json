@@ -1,0 +1,40 @@
+{
+  "rows": [
+    {
+      "scenario": "clock",
+      "wave": "B1",
+      "contrast": 0.24260157653815617,
+      "ghost": 0.029785109514698926
+    },
+    {
+      "scenario": "clock",
+      "wave": "OUR",
+      "contrast": 0.24773650995251906,
+      "ghost": 0.030313315356688464
+    },
+    {
+      "scenario": "scoreboard",
+      "wave": "B1",
+      "contrast": 0.21335473470993527,
+      "ghost": 0.026398352986537477
+    },
+    {
+      "scenario": "scoreboard",
+      "wave": "OUR",
+      "contrast": 0.21990540653378088,
+      "ghost": 0.02700279156133445
+    },
+    {
+      "scenario": "reader",
+      "wave": "B1",
+      "contrast": -0.014461409125787972,
+      "ghost": -0.01955497188987909
+    },
+    {
+      "scenario": "reader",
+      "wave": "OUR",
+      "contrast": -0.014062024612097934,
+      "ghost": -0.017756898703755408
+    }
+  ]
+}

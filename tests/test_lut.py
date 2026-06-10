@@ -109,6 +109,35 @@ def test_validate_imbalanced_flagged():
     assert any("charge imbalance" in e for e in errors)
 
 
+def test_from_waveform_maps_voltages_and_durations():
+    """from_waveform кодирует фазы bang-bang в sub-frame A всех sub-LUT."""
+    # V=(5,-15,5,-15), T=(16,3,2,3) — оптимум M5 (зарядо-сбалансирован).
+    lut = Lut.from_waveform((5.0, -15.0, 5.0, -15.0), (16, 3, 2, 3))
+    # фаза 0: +5 → VSH2, фаза 1: -15 → VSL и т.д., во всех 5 sub-LUT
+    for m in range(N_SUB_LUTS):
+        assert lut.vs[m, 0, 0] == Source.VSH2
+        assert lut.vs[m, 1, 0] == Source.VSL
+        assert lut.vs[m, 2, 0] == Source.VSH2
+        assert lut.vs[m, 3, 0] == Source.VSL
+    assert list(lut.tp[:4, 0]) == [16, 3, 2, 3]
+    # sub-frames B/C/D пустые (TP=0)
+    assert np.all(lut.tp[:, 1:] == 0)
+    # round-trip через encode/decode сохраняет
+    assert Lut.decode(lut.encode()).vs[0, 1, 0] == Source.VSL
+
+
+def test_from_waveform_charge_balanced_optimum():
+    """Оптимум M5 проходит ε-проверку заряда (Σ V·T = 0)."""
+    lut = Lut.from_waveform((5.0, -15.0, 5.0, -15.0), (16, 3, 2, 3))
+    assert abs(lut.charge_balance()) < 1e-9
+    assert lut.validate(charge_tolerance=0.05) == []
+
+
+def test_from_waveform_rejects_mismatched_lengths():
+    with pytest.raises(ValueError, match="!="):
+        Lut.from_waveform((5.0, -15.0), (16,))
+
+
 def test_source_enum_2bit_values():
     """Source values укладываются в 2 бита (для VS поля LUT)."""
     for src in Source:

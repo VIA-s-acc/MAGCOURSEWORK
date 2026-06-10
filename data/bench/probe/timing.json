@@ -1,0 +1,155 @@
+{
+  "scenario": "02_bb",
+  "rows": [
+    {
+      "name": "B1_fast",
+      "voltages": null,
+      "durations": null,
+      "n_frames": null,
+      "energy_mj": 7.597590000000001,
+      "latency_s": 1.7464739999999999,
+      "peak_ma": 10.0,
+      "n_samples": 2184,
+      "ssim": 0.0002526578742379432,
+      "residual": 0.5870799920402952
+    },
+    {
+      "name": "neg_10",
+      "voltages": [
+        -15.0
+      ],
+      "durations": [
+        10
+      ],
+      "n_frames": 10,
+      "charge_vs": -0.00015,
+      "energy_mj": 4.397032000000001,
+      "latency_s": 1.028844,
+      "peak_ma": 10.6,
+      "n_samples": 1287,
+      "ssim": 8.013901157521846e-05,
+      "residual": 0.8730621694593099
+    },
+    {
+      "name": "neg_6",
+      "voltages": [
+        -15.0
+      ],
+      "durations": [
+        6
+      ],
+      "n_frames": 6,
+      "charge_vs": -9e-05,
+      "energy_mj": 3.412130000000001,
+      "latency_s": 0.762532,
+      "peak_ma": 10.3,
+      "n_samples": 954,
+      "ssim": 7.9820659214316e-05,
+      "residual": 0.8714591278892198
+    },
+    {
+      "name": "neg_3",
+      "voltages": [
+        -15.0
+      ],
+      "durations": [
+        3
+      ],
+      "n_frames": 3,
+      "charge_vs": -4.5e-05,
+      "energy_mj": 2.6495170000000003,
+      "latency_s": 0.5625399999999999,
+      "peak_ma": 10.0,
+      "n_samples": 704,
+      "ssim": 7.9752856754698e-05,
+      "residual": 0.8696366853054281
+    },
+    {
+      "name": "pos_10",
+      "voltages": [
+        15.0
+      ],
+      "durations": [
+        10
+      ],
+      "n_frames": 10,
+      "charge_vs": 0.00015,
+      "energy_mj": 4.473308,
+      "latency_s": 1.0289860000000002,
+      "peak_ma": 10.700000000000001,
+      "n_samples": 1287,
+      "ssim": 9.834147381695797e-05,
+      "residual": 0.9000749899802467
+    },
+    {
+      "name": "pos_6",
+      "voltages": [
+        15.0
+      ],
+      "durations": [
+        6
+      ],
+      "n_frames": 6,
+      "charge_vs": 9e-05,
+      "energy_mj": 3.4485849999999987,
+      "latency_s": 0.7624299999999999,
+      "peak_ma": 10.200000000000001,
+      "n_samples": 954,
+      "ssim": 9.886818097321913e-05,
+      "residual": 0.8990387868072427
+    },
+    {
+      "name": "lvneg_10",
+      "voltages": [
+        -5.0
+      ],
+      "durations": [
+        10
+      ],
+      "n_frames": 10,
+      "charge_vs": 0.0,
+      "energy_mj": 3.494063999999999,
+      "latency_s": 0.896141,
+      "peak_ma": 10.9,
+      "n_samples": 1121,
+      "ssim": 9.864075509940214e-05,
+      "residual": 0.9002398692348231
+    },
+    {
+      "name": "lvneg_20",
+      "voltages": [
+        -5.0
+      ],
+      "durations": [
+        20
+      ],
+      "n_frames": 20,
+      "charge_vs": 0.0,
+      "energy_mj": 5.807827000000001,
+      "latency_s": 1.561837,
+      "peak_ma": 11.000000000000002,
+      "n_samples": 1953,
+      "ssim": 9.832560948825406e-05,
+      "residual": 0.9006016448562193
+    },
+    {
+      "name": "bias_neg",
+      "voltages": [
+        -15.0,
+        5.0
+      ],
+      "durations": [
+        8,
+        4
+      ],
+      "n_frames": 12,
+      "charge_vs": -9.999999999999999e-05,
+      "energy_mj": 5.406345,
+      "latency_s": 1.2952940000000002,
+      "peak_ma": 19.1,
+      "n_samples": 1620,
+      "ssim": 9.967166517540949e-05,
+      "residual": 0.7961307181014076
+    }
+  ]
+}

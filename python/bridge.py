@@ -45,6 +45,9 @@ OP_WRITE_LUT_DYNAMIC   = 0x0C
 OP_WRITE_REGISTER      = 0x0D
 OP_BENCH_RUN           = 0x0E
 OP_BENCH_FACTORY       = 0x0F
+OP_PART_BASE           = 0x10
+OP_BENCH_PARTIAL       = 0x11
+OP_WRITE_OLD           = 0x12
 
 # 0x22-байты заводского refresh для BENCH_FACTORY.
 REFRESH_FULL_F7 = 0xF7   # B0: полный заводский refresh (load temp + Mode 1)
@@ -277,6 +280,52 @@ class EpdBridge:
         self._send(payload)
         self._check_status(OP_BENCH_FACTORY)
 
+        n_raw = self._recv(2)
+        n_samples = (n_raw[0] << 8) | n_raw[1]
+        body = self._recv(n_samples * 8)
+        return parse_bench_response(n_raw + body)
+
+    def part_base(self, image: bytes) -> None:
+        """Опкод 0x10: записать базовый кадр в RAM 0x24+0x26 + full refresh.
+
+        Устанавливает «предыдущее» состояние для последующего partial-обновления.
+        ``init()`` должен быть выполнен до вызова.
+        """
+        if len(image) != EPD_FRAME_SIZE:
+            raise ValueError(f"image must be {EPD_FRAME_SIZE} bytes")
+        self._send(bytes([OP_PART_BASE]) + image)
+        self._check_status(OP_PART_BASE)
+
+    def write_old(self, image: bytes) -> None:
+        """Опкод 0x12: записать «предыдущий» кадр в RAM 0x26 (без refresh).
+
+        Для корректного последовательного partial: перед bench_partial кадра k
+        в 0x26 кладётся кадр k-1, чтобы контроллер двигал только изменившиеся
+        пиксели относительно действительно предыдущего кадра.
+        """
+        if len(image) != EPD_FRAME_SIZE:
+            raise ValueError(f"image must be {EPD_FRAME_SIZE} bytes")
+        self._send(bytes([OP_WRITE_OLD]) + image)
+        self._check_status(OP_WRITE_OLD)
+
+    def bench_partial(
+        self, lut_bytes: bytes, cfg6: bytes, image: bytes, mode_byte: int = 0x0F
+    ) -> Trace:
+        """Опкод 0x11: безмерцательное partial-обновление + INA-трасса.
+
+        ``cfg6`` = [0x3F, 0x03(gate), VSH1, VSH2, VSL, 0x2C(VCOM)] — хвост
+        напряжений partial-LUT. ``mode_byte``: 0x0F (качество) / 0x0C (быстро) /
+        0xCF. Базовый кадр должен быть установлен через ``part_base`` ранее.
+        """
+        if len(lut_bytes) != EPD_LUT_SIZE:
+            raise ValueError(f"LUT must be {EPD_LUT_SIZE} bytes")
+        if len(cfg6) != 6:
+            raise ValueError("cfg6 must be 6 bytes")
+        if len(image) != EPD_FRAME_SIZE:
+            raise ValueError(f"image must be {EPD_FRAME_SIZE} bytes")
+        payload = bytes([OP_BENCH_PARTIAL]) + lut_bytes + cfg6 + bytes([mode_byte]) + image
+        self._send(payload)
+        self._check_status(OP_BENCH_PARTIAL)
         n_raw = self._recv(2)
         n_samples = (n_raw[0] << 8) | n_raw[1]
         body = self._recv(n_samples * 8)

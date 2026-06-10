@@ -1,0 +1,8 @@
+{
+  "baseline": "B0",
+  "scenario": "02_bb",
+  "energy_mj": 10.164888,
+  "latency_s": 2.271245,
+  "peak_ma": 9.700000000000001,
+  "n_samples": 2840
+}

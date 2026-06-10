@@ -1,19 +1,9 @@
 {
-  "source": "oneshot_B0_01_ww.jpg",
-  "panel_bbox": [
-    812,
-    405,
-    1336,
-    642
-  ],
-  "white_patch_bbox": [
-    980,
-    725,
-    1162,
-    900
-  ],
+  "source": "roi_white2.jpg (recalibrated after camera move 2026-06-05 #2)",
+  "panel_bbox": [780, 390, 1246, 620],
+  "white_patch_bbox": [931, 714, 1129, 919],
   "rotate_deg": 270,
   "panel_w": 122,
   "panel_h": 250,
-  "note": "IP Webcam landscape 1920x1080; поворот к портрету 122x250; направление 90/270 уточняется по асимметричному кадру"
+  "note": "камера фиксирована; bbox активной области (безель поджат); поворот 270 -> портрет 122x250"
 }

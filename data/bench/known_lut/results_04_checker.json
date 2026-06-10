@@ -1,0 +1,134 @@
+{
+  "scenario": "04_checker",
+  "rows": [
+    {
+      "name": "B1_fast",
+      "tp_scale": null,
+      "energy_mj": 10.410489999999998,
+      "energy_std": 0.0,
+      "latency_s": 1.74721,
+      "peak_ma": 10.8,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x100",
+      "tp_scale": 1.0,
+      "tp_a": [
+        15,
+        15,
+        15,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 13.951185333333333,
+      "energy_std": 0.060009944188904665,
+      "latency_s": 2.6848706666666664,
+      "peak_ma": 9.0,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x050",
+      "tp_scale": 0.5,
+      "tp_a": [
+        8,
+        8,
+        8,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 8.520155333333335,
+      "energy_std": 0.029396774588756894,
+      "latency_s": 1.5674223333333335,
+      "peak_ma": 8.866666666666667,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x040",
+      "tp_scale": 0.4,
+      "tp_a": [
+        6,
+        6,
+        6,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 6.913638000000002,
+      "energy_std": 0.04954507283945215,
+      "latency_s": 1.2481593333333332,
+      "peak_ma": 8.6,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x033",
+      "tp_scale": 0.33,
+      "tp_a": [
+        5,
+        5,
+        5,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 6.106592666666667,
+      "energy_std": 0.027903523317954818,
+      "latency_s": 1.088304,
+      "peak_ma": 8.433333333333334,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x025",
+      "tp_scale": 0.25,
+      "tp_a": [
+        4,
+        4,
+        4,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 5.370999333333334,
+      "energy_std": 0.023890928352736013,
+      "latency_s": 0.928607,
+      "peak_ma": 8.833333333333334,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x020",
+      "tp_scale": 0.2,
+      "tp_a": [
+        3,
+        3,
+        3,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 4.508120666666667,
+      "energy_std": 0.024124745709655938,
+      "latency_s": 0.768953,
+      "peak_ma": 8.633333333333333,
+      "residual": null,
+      "contrast": null
+    },
+    {
+      "name": "v3_x015",
+      "tp_scale": 0.15,
+      "tp_a": [
+        2,
+        2,
+        2,
+        1
+      ],
+      "n": 3,
+      "energy_mj": 3.712909333333333,
+      "energy_std": 0.004264361330323433,
+      "latency_s": 0.609334,
+      "peak_ma": 8.566666666666666,
+      "residual": null,
+      "contrast": null
+    }
+  ]
+}
