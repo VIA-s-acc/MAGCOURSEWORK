@@ -5,8 +5,14 @@
 DIST = dist
 XELATEX = xelatex -interaction=nonstopmode -output-directory=$(DIST)
 
-.PHONY: build thesis supplement clean
+.PHONY: build thesis supplement slides clean
 build: thesis supplement
+
+slides:
+	mkdir -p $(DIST)
+	$(XELATEX) slides.tex
+	$(XELATEX) slides.tex
+	@echo "slides.pdf:" && pdfinfo $(DIST)/slides.pdf 2>/dev/null | grep Pages || true
 
 thesis:
 	mkdir -p $(DIST)/chapters
