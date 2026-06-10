@@ -21,13 +21,13 @@ ESP32 (\verb|firmware/epd_bridge/|) реализует бинарный прот
 \verb|lut.py|), обработку фотографий (\verb|photo_pipeline.py|), метрики
 качества (\verb|quality.py|), калиброванную панельную модель и оптимизатор
 (\verb|panel_model.py|), синтетические видео-сцены (\verb|video_scenes.py|).
-Скрипты измерительной кампании, калибровки и построения графиков~---
+Скрипты измерительной кампании, калибровки и построения графиков собраны
 в~\verb|scripts/| (\verb|fit_model.py|, \verb|optimize.py|, \verb|eval_metrics.py|,
 \verb|measure_final.py|, \verb|measure_partial.py|, \verb|run_video.py|,
 \verb|make_figures.py| и др.). Параметры калиброванной модели и сырые замеры
 сохранены в \verb|data/bench/| (\verb|calibrated_model.json|,
 \verb|final/final.json|, \verb|roi_config.json|, \verb|video/|), что
-обеспечивает полную воспроизводимость результатов
+гарантирует полную воспроизводимость результатов
 глав~\ref{ch:simulation}--\ref{ch:experiment}.
 
 \medskip
@@ -36,3 +36,112 @@ ESP32 (\verb|firmware/epd_bridge/|) реализует бинарный прот
 отдельный сопроводительный материал (файл \verb|supplement_proofs.tex|); в
 основном тексте~(\S\ref{ch:theorem}) приведены их формулировки и схемы
 доказательств.
+
+
+% ============================================================================
+\chapter{Схема подключения измерительного стенда}\label{app:wiring}
+% ============================================================================
+
+Стенд собран из трёх модулей: отладочной платы \textbf{ESP32~DevKit~V1}
+(мост USB\,$\leftrightarrow$\,SPI/I²C), дисплейного модуля
+\textbf{Waveshare~2.13"~V4} на контроллере SSD1680 и измерителя тока/мощности
+\textbf{INA219}. Проводка делится на три группы: сигнальная шина SPI к панели,
+шина I²C и питание самого датчика, а также \emph{шунт-линия}~--- питание панели,
+пропущенное через измерительный шунт INA219. Именно на шунте измеряется ток
+обновления, по которому численным интегрированием $E=\int u\,i\,dt$ вычисляется
+энергия (\S\ref{sec:firmware}).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        font=\small,
+        comp/.style={draw, thick, rounded corners, align=center},
+        sig/.style={-{Latex[length=2mm]}, semithick},
+        pwr/.style={-{Latex[length=2.6mm]}, very thick, red!75!black},
+        i2c/.style={-{Latex[length=2mm]}, semithick, blue!65!black},
+    ]
+        % --- модули ---
+        \node[comp, fill=blue!6,  minimum width=30mm, minimum height=32mm] (esp)
+            at (0,0) {\textbf{ESP32}\\\textbf{DevKit V1}\\[3pt]\footnotesize CP2102\\\footnotesize USB-Serial};
+        \node[comp, fill=orange!12, minimum width=32mm, minimum height=16mm] (ina)
+            at (8.0,3.0) {\textbf{INA219}\\[2pt]\footnotesize I²C 0x40\\\footnotesize шунт 0{,}1~Ом};
+        \node[comp, fill=gray!10, minimum width=34mm, minimum height=28mm] (epd)
+            at (8.0,-1.7) {\textbf{Waveshare}\\\textbf{2.13"~V4}\\[3pt]\footnotesize SSD1680\\\footnotesize 250$\times$122};
+
+        % --- USB к ПК ---
+        \draw[sig, {Latex[length=2mm]}-{Latex[length=2mm]}] (esp.west) -- ++(-1.6,0)
+            node[left, align=center]{\footnotesize ПК\\\footnotesize USB};
+
+        % --- SPI шина ESP32 -> EPD ---
+        \draw[sig] (esp.east |- 0,-0.6) -- (epd.west |- 0,-0.6)
+            node[midway, above, align=center, font=\scriptsize]
+            {SPI 10\,МГц\\ DIN, CLK, CS, DC, RST\\ BUSY $\!\to$, GND};
+
+        % --- I2C шина ESP32 -> INA219 (логика датчика) ---
+        \draw[i2c] (esp.east |- 0,0.7) -- (ina.west)
+            node[midway, below, align=center, font=\scriptsize, blue!65!black]
+            {I²C 400\,кГц\\ SDA, SCL, VCC, GND};
+
+        % --- шунт-линия: 3V3 -> Vin+ (вход сверху) ---
+        \draw[pwr] (esp.north) |- (ina.north)
+            node[pos=0.62, above, font=\scriptsize, red!75!black]{3V3 $\to$ Vin$+$};
+        % --- шунт-линия: Vin- -> VCC панели (вертикаль вниз) ---
+        \draw[pwr] (ina.south) -- (epd.north)
+            node[midway, right, font=\scriptsize, red!75!black]{Vin$-$ $\to$ VCC};
+
+        % --- легенда ---
+        \node[align=left, font=\scriptsize, anchor=north west] at (-2.6,-3.5)
+            {\textcolor{red!75!black}{\rule[0.4ex]{4mm}{1pt}}~питание панели через шунт \quad
+             \textcolor{blue!65!black}{\rule[0.4ex]{4mm}{1pt}}~I²C + питание датчика \quad
+             \rule[0.4ex]{4mm}{1pt}~SPI-сигналы};
+    \end{tikzpicture}
+    \caption{Схема соединений стенда. Питание панели (3,3~В) пропущено
+        \emph{последовательно} через шунт 0,1~Ом датчика INA219 (Vin$+\to$Vin$-$),
+        что и позволяет измерять ток обновления; цифровые сигналы SSD1680 идут по
+        SPI, телеметрия INA219~--- по I²C.}
+    \label{fig:wiring}
+\end{figure}
+
+Точное соответствие выводов приведено в табл.~\ref{tab:pinout}. Все логические
+уровни и питание панели~--- \textbf{3,3~В} (подача 5~В выводит панель из строя);
+вывод \texttt{VCC} дисплейного модуля подключается \emph{только} к выводу
+\texttt{Vin$-$} INA219, а не напрямую к шине 3V3, иначе ток пойдёт мимо шунта и
+измерение энергии будет неверным.
+
+\begin{table}[H]
+    \centering
+    \caption{Распиновка соединений стенда (по прошивке \texttt{epd\_bridge.ino})}
+    \label{tab:pinout}
+    \small
+    \begin{tabular}{lll}
+        \toprule
+        Вывод ESP32 & Назначение & Куда подключается \\
+        \midrule
+        \multicolumn{3}{l}{\emph{Группа 1~--- SPI к панели (SSD1680)}} \\
+        GPIO23 & MOSI (DIN)    & DIN дисплейного модуля \\
+        GPIO18 & SCK (CLK)     & CLK \\
+        GPIO5  & CS            & CS \\
+        GPIO17 & DC            & DC \\
+        GPIO16 & RST           & RST \\
+        GPIO4  & BUSY (вход)   & BUSY \\
+        GND    & общий         & GND модуля \\
+        \midrule
+        \multicolumn{3}{l}{\emph{Группа 2~--- I²C и питание INA219}} \\
+        3V3    & питание       & VCC INA219 \\
+        GND    & общий         & GND INA219 \\
+        GPIO21 & SDA           & SDA INA219 \\
+        GPIO22 & SCL           & SCL INA219 \\
+        \midrule
+        \multicolumn{3}{l}{\emph{Группа 3~--- шунт-линия (питание панели через шунт)}} \\
+        3V3    & питание панели & Vin$+$ INA219 \\
+        --- & шунт 0,1~Ом & Vin$+ \to$ Vin$-$ (внутри INA219) \\
+        Vin$-$ INA219 & питание панели & VCC дисплейного модуля \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\noindent Параметры интерфейсов: SPI~--- 10~МГц, режим~0, старшим битом вперёд;
+I²C~--- 400~кГц, адрес INA219 \texttt{0x40}; USB-Serial~--- 921600~бод. INA219
+сконфигурирован на непрерывное измерение шунта и шины с усреднением (частота
+выборки $\approx300$~Гц), чего достаточно для разрешения профиля тока фаз
+обновления длительностью в десятки миллисекунд.
