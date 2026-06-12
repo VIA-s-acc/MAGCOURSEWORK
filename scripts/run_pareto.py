@@ -1,10 +1,12 @@
 """Полный Парето-фронт по тест-набору + сравнение с NSGA-II.
 
 Обходит 10 сценариев перехода (z_init → z_target), для каждого строит
-Парето-фронт ε-constraint методом и (опц.) NSGA-II baseline. Считает
-hypervolume и IGD. Сохраняет 6 PDF-рисунков и LaTeX-таблицу summary.
+Парето-фронт ε-constraint методом и (опц.) NSGA-II baseline, сравнивает их по
+hypervolume. Сохраняет PDF-рисунки и LaTeX-таблицу summary.
 
-Используется из notebooks/03_pareto.ipynb. Реализует § 6.4 курсовой.
+Это «предсказанный» пайплайн на ODE-суррогате — для структурного сравнения с
+NSGA-II в одной модели; измеренные результаты см. scripts/make_figures.py.
+Реализует § 6.4 курсовой.
 """
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ from tqdm.auto import tqdm
 
 from python.baselines import NSGA2
 from python.optimizer import Waveform
-from python.pareto import ParetoPoint, build_pareto_frontier, filter_dominated, hypervolume, igd
+from python.pareto import ParetoPoint, build_pareto_frontier, hypervolume
 from python.surrogate import SurrogateModel
 from scripts.run_optimize import build_sim_from_calibration, build_surrogate, load_calibration
 
@@ -72,9 +74,7 @@ def run_one_scenario(
     eps_G_grid: tuple[float, ...], eps_tau_grid: tuple[float, ...],
     voltages: tuple[float, ...], durations: tuple[int, ...], k_eff_max: int,
 ) -> tuple[list[ParetoPoint], list[ParetoPoint]]:
-    """Вернуть (наш фронт, NSGA-II фронт). NSGA-II с seed=42 для
-    воспроизводимости (фиксированный random_state, но честный стохастический
-    алгоритм без кэширования)."""
+    """Вернуть (наш фронт, NSGA-II фронт). NSGA-II с seed=42 для воспроизводимости."""
     logger.info("scenario: %s", sc.name)
     ours = build_pareto_frontier(
         z_init=sc.z_init, z_target=sc.z_target,

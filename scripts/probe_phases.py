@@ -162,7 +162,7 @@ def main() -> int:
         print(f"{r['name']:>11} {r['n_frames']:>4} {r['energy_mj']:>7.3f} "
               f"{r['latency_s']:>7.3f} {con:>9}")
     print("\n  Сравни с равномерной кривой при той же E: выше contrast = наш метод доминирует.")
-    print("  Цель — обойти B1 (E=8.34, contrast=0.372).")
+    print("  Цель — обойти заводской быстрый режим B1 (база в data/bench/final/final.json).")
     return 0
 
 

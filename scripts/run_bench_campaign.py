@@ -185,7 +185,10 @@ def main() -> int:
                                 ghost = compute_ghost(photo, scenario_img)
                             except Exception as exc:  # noqa: BLE001
                                 logger.warning("фото %s/%s не снято: %s", bl, sc, exc)
-                        if ghost is not None:
+                        # SSIM/residual — только в строке с фактическим фото (rep==0),
+                        # иначе один замер дублировался бы во все повторы и учитывался
+                        # бы N раз при агрегации.
+                        if ghost is not None and rep == 0:
                             row.update(ssim=ghost["ssim"], residual=ghost["residual"])
                         rows.append(row)
                         jsonl_f.write(json.dumps(row, ensure_ascii=False) + "\n")
