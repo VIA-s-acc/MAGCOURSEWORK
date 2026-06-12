@@ -6,7 +6,7 @@
 # Литература: PDF-файлы в docs/refs/ слишком тяжёлые и часто копирайт. Содержание описано в .ai-factory/RESEARCH.md.
 docs/refs/
 docs/inbox/
-
+.playwright-mcp
 # LaTeX временные
 *.aux
 *.lof

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -105,7 +106,7 @@ def _iter_bang_bang_candidates(
     durations: tuple[int, ...],
     k_eff_max: int,
     f_frame: float,
-) -> object:
+) -> "Iterator[Waveform]":
     """Генератор всех bang-bang waveforms длины 1..k_eff_max.
 
     Принципиально: не повторяем подряд одинаковое напряжение (это эквивалентно
@@ -134,60 +135,26 @@ def solve_pmp_slice(
 ) -> WaveformResult | None:
     """Решить одну ε-задачу из теоремы 4.1: min E s.t. G≤ε_G, τ≤ε_τ + жёсткие.
 
-    Возвращает None, если ни один кандидат не удовлетворяет ограничениям.
-
-    Логика поиска:
-      1) Перебор bang-bang кандидатов с K_eff ∈ {1..k_eff_max}.
-      2) Раннее отсечение: |Σ V·T| > charge_eps → skip.
-      3) Раннее отсечение: τ(u) > eps_tau → skip (без вызова model).
-      4) Вычисление (E, G, τ) через model.predict().
-      5) Фильтр G > eps_G → skip.
-      6) Обновление best_E.
+    Перебор bang-bang кандидатов с ранним отсечением по заряду (|Σ V·T|>ε) и
+    латентности (τ>ε_τ) до вызова model.predict(); возвращает None, если ни один
+    кандидат не прошёл ограничения.
     """
-    logger.info(
-        "solve_pmp_slice: z_init=%.3f, z_target=%.3f, ε_G=%.4f, ε_τ=%.3fs, K_eff_max=%d",
-        z_init, z_target, eps_G, eps_tau, k_eff_max,
-    )
-
     best: WaveformResult | None = None
-    n_total = 0
-    n_pass_balance = 0
-    n_pass_tau = 0
-    n_eval = 0
-
     for wf in _iter_bang_bang_candidates(voltages, durations, k_eff_max, f_frame):
-        n_total += 1
-
         if abs(wf.charge_integral) > charge_eps:
             continue
-        n_pass_balance += 1
-
         if wf.total_time > eps_tau:
             continue
-        n_pass_tau += 1
-
         E, G, tau = model.predict(wf, z_init, z_target)
-        n_eval += 1
-
         if G > eps_G:
             continue
         if best is not None and E >= best.energy:
             continue
-
         best = WaveformResult(waveform=wf, energy=E, ghost=G, latency=tau)
-        logger.debug(
-            "new best: K_eff=%d, E=%.4f мДж, G=%.4f, τ=%.3f с, V=%s, T=%s",
-            wf.k_eff, E, G, tau, wf.voltages, wf.durations,
-        )
 
-    if best is None:
-        logger.info(
-            "no feasible: total=%d, charge_ok=%d, τ_ok=%d, eval=%d",
-            n_total, n_pass_balance, n_pass_tau, n_eval,
-        )
-    else:
-        logger.info(
-            "best: E=%.4f мДж, G=%.4f, τ=%.3f с (K_eff=%d) | total=%d, eval=%d",
-            best.energy, best.ghost, best.latency, best.waveform.k_eff, n_total, n_eval,
-        )
+    logger.debug(
+        "solve_pmp_slice(z=%.3f→%.3f, ε_G=%.4f, ε_τ=%.3fs): %s",
+        z_init, z_target, eps_G, eps_tau,
+        "none" if best is None else f"E={best.energy:.4f}мДж K_eff={best.waveform.k_eff}",
+    )
     return best

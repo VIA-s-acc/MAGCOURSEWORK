@@ -28,11 +28,13 @@ from scipy.optimize import curve_fit
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 REPO = Path(__file__).resolve().parents[1]
 
-# Замеры (Tc, Tosc_total, Td, N, E_mj, tau_s, contrast) — стенд, V=±15, 03_halves.
-# Tosc_total = сумма кадров осцилляц. фазы 1 за все повторы (TP_A+TP_C)*(RP+1).
-# Контраст~--- метрика otsu_gap (разрыв классов яркости по Оцу; alignment-free,
-# выбрана эмпирически в scripts/eval_metrics.py как наиболее монотонная и на
-# крупном, и на мелком контенте). Значения пересчитаны из фото стенда.
+# Замороженный калибровочный датасет: реальные замеры стенда (V=±15, 03_halves),
+# сведённые вручную из прогонов probe_phases.py / test_known_lut.py / measure_*.py.
+# Сырьё рядом: data/bench/{phases,known_lut,final}/*.json (INA219-трассы + фото).
+# Поля: (Tc, Tosc_total, Td, N, E_mj, tau_s, contrast); N = Tc+Tosc+Td+1(settle);
+# Tosc_total — сумма кадров фазы осцилляции за все повторы.
+# contrast — метрика otsu_gap (разрыв классов яркости по Оцу, alignment-free;
+# выбрана эмпирически в scripts/eval_metrics.py).
 DATA = [
     # name        Tc  Tosc  Td   N    E       tau     otsu_gap
     ("full",      15,  90,  15, 121, 12.327, 2.685, 0.3919),

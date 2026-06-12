@@ -150,14 +150,13 @@ def fit_effective_params(stats: list[RunStats]) -> dict:
     tau_stokes_literature_ms = 60.0   # He 2020: измерено 60 ms на ED060SC7
     mu_star_literature = 1e-9          # типовое для коммерческих EPD
 
-    # Эффективная мощность × длительность фазы должна дать движение частиц.
-    # Из формулы Lin 2024: P_peak = (1/2)·C·ΔV²·f·V_source
-    # → C_eff = 2·P_peak / (ΔV²·f·V_source)
-    # Берём VSH1 как опорный case:
-    p_peak_vsh1_w = fit["VSH1"]["avg_peak_current_ma"] * 1e-3 * 3.3
-    # frame rate SSD1680 ≈ 50 Hz; ΔV между фазами = 2·V_source при swithing
-    delta_v = 2 * NOMINAL_VOLTAGES["VSH1"]
-    f_switching = 50.0
+    # Оценка эффективной ёмкости по формуле Lin 2024 P_peak=½·C·ΔV²·f·V_source.
+    # Мощность считаем при напряжении шины питания панели V_bus=3.3 В (именно его
+    # ток меряет INA219; драйвовые ±15 В генерит внутренний charge-pump SSD1680).
+    V_BUS = 3.3
+    p_peak_vsh1_w = fit["VSH1"]["avg_peak_current_ma"] * 1e-3 * V_BUS
+    delta_v = 2 * NOMINAL_VOLTAGES["VSH1"]   # размах между фазами ±V_source
+    f_switching = 50.0                        # частота кадров SSD1680
     c_effective = 2 * p_peak_vsh1_w / (delta_v**2 * f_switching * NOMINAL_VOLTAGES["VSH1"])
 
     fit["model_params"] = {
@@ -167,7 +166,12 @@ def fit_effective_params(stats: list[RunStats]) -> dict:
         "rho_max": 0.40,
         "L_caps_um": 40.0,
         "c_effective_pF": float(c_effective * 1e12),
-        "source": "mu_star, tau_stokes, rho_min/max — из литературы (Wang 2022, He 2020); c_effective — фит по данным стенда",
+        # Явно: что допущение из литературы, а что оценено по стенду.
+        "_assumed_from_literature": ["mu_star_m_per_Vs", "tau_stokes_ms",
+                                     "rho_min", "rho_max", "L_caps_um"],
+        "_estimated_from_bench": ["c_effective_pF"],
+        "source": "mu*, tau_Stokes, rho, L — типовые из литературы (Wang 2022, He 2020); "
+                  "c_effective — грубая оценка по пиковому току стенда",
     }
 
     return fit

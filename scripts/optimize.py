@@ -8,6 +8,8 @@
 
 from __future__ import annotations
 
+import json
+import math
 import sys
 from pathlib import Path
 
@@ -17,8 +19,12 @@ from python.panel_model import PanelModel, Waveform, optimize
 
 REPO = Path(__file__).resolve().parents[1]
 
-# Заводские точки (стенд, 03_halves): для сравнения.
-FACTORY = {"B0_full": (10.4, 2.27, 0.367), "B1_fast": (8.34, 1.747, 0.372)}
+
+def load_b1() -> tuple[float, float, float]:
+    """Заводской быстрый режим B1 из измеренного final.json (база для сравнения)."""
+    rows = json.loads((REPO / "data" / "bench" / "final" / "final.json").read_text())["rows"]
+    b1 = next(r for r in rows if r["kind"] == "B1")
+    return b1["E_mj"], b1["tau_s"], b1["otsu"]
 
 
 def show(model: PanelModel, w: Waveform, tag: str) -> dict:
@@ -31,14 +37,15 @@ def show(model: PanelModel, w: Waveform, tag: str) -> dict:
 
 def main() -> int:
     m = PanelModel.load()
+    b1_e, b1_tau, b1_c = load_b1()
     print(f"Модель: Cmax={m.Cmax:.3f}, Th={m.Th:.2f}, f={m.f_frame:.1f}Гц")
-    print(f"Заводский B1: E=8.34мДж τ=1.747с C=0.372\n")
+    print(f"Заводский B1 (final.json): E={b1_e:.2f}мДж τ={b1_tau:.3f}с C={b1_c:.3f}\n")
 
     c_star = 0.34   # цель ≈ 95% Cmax (≈91% заводского)
     print(f"=== Наш оптимум при C* = {c_star} ===")
     rows = []
     # Режим 1: ε-relaxed (макс. экономия, долговечность через периодич. сброс)
-    w = optimize(m, c_star, eps_charge=1e9, tc_min=4)
+    w = optimize(m, c_star, eps_charge=math.inf, tc_min=4)
     if w: rows.append(show(m, w, "наш (ε-relaxed, Tc≥4)"))
     # Режим 2: умеренный баланс ε=120 В·кадр (|Td−Tc|≤8)
     w = optimize(m, c_star, eps_charge=120, tc_min=4)
@@ -47,10 +54,10 @@ def main() -> int:
     w = optimize(m, c_star, eps_charge=0, tc_min=0)
     if w: rows.append(show(m, w, "наш (ε=0, сбаланс.)"))
 
-    print("\n=== Сравнение с заводским B1 (C≈0.372, E=8.34, τ=1.747) ===")
+    print(f"\n=== Сравнение с заводским B1 (C≈{b1_c:.3f}, E={b1_e:.2f}, τ={b1_tau:.3f}) ===")
     for r in rows:
-        dE = 100 * (r["E_mj"] - 8.34) / 8.34
-        dt = 100 * (r["tau_s"] - 1.747) / 1.747
+        dE = 100 * (r["E_mj"] - b1_e) / b1_e
+        dt = 100 * (r["tau_s"] - b1_tau) / b1_tau
         print(f"  {r['tag']:>22}: ΔE={dE:+5.1f}%  Δτ={dt:+5.1f}%  при C={r['contrast']:.3f}")
 
     # Парето-фронт нашего метода (ε-relaxed): C* от 0.20 до 0.357
@@ -59,7 +66,7 @@ def main() -> int:
     pareto = []
     cstar = 0.20
     while cstar <= 0.356:
-        w = optimize(m, cstar, eps_charge=1e9, tc_min=4)
+        w = optimize(m, cstar, eps_charge=math.inf, tc_min=4)
         if w:
             pareto.append({"c": cstar, "tc": w.tc, "td": w.td,
                            "E_mj": m.energy(w), "tau_s": m.latency(w)})

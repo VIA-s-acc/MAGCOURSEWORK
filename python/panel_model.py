@@ -83,15 +83,17 @@ def optimize(
     model: PanelModel,
     c_target: float,
     tau_max: float = 10.0,
-    eps_charge: float = 1e9,
+    eps_charge: float = math.inf,
     tc_min: int = 0,
     use_osc: bool = False,
     td_max: int = 80,
 ) -> Waveform | None:
     """Дискретная оптимизация теоремы 4.1: min E при C≥C*, τ≤τ_max, |Q|≤ε, Tc≥Tc_min.
 
-    Осцилляция доминируется (a_osc<1, та же цена) → по умолчанию Tosc=0.
-    Перебор bang-bang (Tc, Td) — пространство мало благодаря структурной теореме.
+    eps_charge по умолчанию math.inf — зарядовое ограничение неактивно (ε-relaxed);
+    для DC-баланса передаётся конечный ε (0 = строгий баланс Td=Tc). Осцилляция
+    доминируется (a_osc<1, та же цена) → по умолчанию Tosc=0; перебор bang-bang
+    (Tc, Td) мал благодаря структурной теореме.
     """
     eps_frames = eps_charge / model.V_ref  # |Td−Tc| ≤ eps_frames
     best: Waveform | None = None

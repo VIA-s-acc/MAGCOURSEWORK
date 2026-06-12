@@ -76,7 +76,8 @@ def main():
                          "E_mj": statistics.mean(Es), "E_std": statistics.pstdev(Es),
                          "tau_s": statistics.mean(Ts), "otsu": c})
             logger.info("  E=%.3f±%.3f мДж τ=%.3f с otsu=%s", statistics.mean(Es),
-                        statistics.pstdev(Es), statistics.mean(Ts), f"{c:.4f}" if c else "--")
+                        statistics.pstdev(Es), statistics.mean(Ts),
+                        f"{c:.4f}" if c is not None else "--")
         br.sleep()
 
     (out/"final.json").write_text(json.dumps({"rows": rows}, indent=2, ensure_ascii=False), encoding="utf-8")

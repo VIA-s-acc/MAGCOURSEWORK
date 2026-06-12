@@ -38,9 +38,22 @@
 \setbeamercolor{block title}{fg=white, bg=inkaccent}
 \setbeamercolor{block body}{bg=inkaccent!8}
 \setbeamerfont{frametitle}{size=\large, series=\bfseries}
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth, sep=0pt, leftskip=9mm, rightskip=4mm]{frametitle}%
+    \vspace{2mm}\insertframetitle\par\vspace{1.5mm}%
+  \end{beamercolorbox}}
+\setbeamerfont{itemize/enumerate body}{size=\small}
+\setbeamerfont{itemize/enumerate subbody}{size=\footnotesize}
+\setbeamerfont{block body}{size=\small}
+\setbeamerfont{block title}{size=\small, series=\bfseries}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{itemize item}{\color{inkaccent}$\blacktriangleright$}
 \setbeamertemplate{itemize subitem}{\color{inkaccent!70}$\triangleright$}
+% компактные списки: меньше вертикальных отступов
+\setlength{\leftmargini}{1.6em}
+\addtolength{\itemsep}{-2pt}
+\setbeamertemplate{itemize/enumerate body begin}{\setlength{\itemsep}{2pt}}
 \setbeamertemplate{footline}{%
   \hbox{\hspace{4mm}\color{inkdark!60}\scriptsize Оптимизация обновления EPD
   \hfill \insertframenumber\,/\,\inserttotalframenumber\hspace{4mm}}\vskip2mm}
@@ -80,14 +93,14 @@
   \begin{columns}[T]
     \begin{column}{0.58\textwidth}
       \begin{itemize}
-        \item EPD (электронная бумага): читалки, ценники, IoT-индикаторы~--- сегменты с критичным энергопотреблением
-        \item Статичное изображение энергии не требует, \alert{вся цена~--- в моменте обновления}
+        \item EPD: читалки, ценники, IoT-индикаторы~--- сегменты с критичным энергопотреблением
+        \item Статичная картинка энергии не требует, \alert{вся цена~--- в моменте обновления}
         \item Обновлением управляет \textbf{waveform}~--- программа импульсов напряжения (LUT контроллера)
-        \item Заводские waveform универсальны и консервативны: длинная осцилляция, запас по температуре
+        \item Заводские waveform консервативны: длинная осцилляция, запас по температуре
       \end{itemize}
-      \vspace{2mm}
+      \vspace{1.5mm}
       \begin{block}{Вопрос работы}
-        Сколько энергии и времени можно сэкономить, проектируя waveform \emph{оптимально},~--- и что говорит теория о форме оптимума?
+        Сколько можно сэкономить, проектируя waveform \emph{оптимально},~--- и что говорит теория о форме оптимума?
       \end{block}
     \end{column}
     \begin{column}{0.40\textwidth}
@@ -230,7 +243,7 @@
   \begin{columns}[T]
     \begin{column}{0.47\textwidth}
       \centering
-      \includegraphics[width=\textwidth]{figures/raw_photos/stand_overview.jpg}\\
+      \includegraphics[height=54mm]{figures/raw_photos/stand_overview.jpg}\\
       \src{ESP32 DevKit V1 + Waveshare 2.13" V4 + INA219, камера IP~Webcam над панелью}
     \end{column}
     \begin{column}{0.51\textwidth}
@@ -253,14 +266,13 @@
         \item Пиксельно-точные (SSIM, региональный контраст) на мелких паттернах дают \alert{отрицательную} корреляцию: субпиксельное рассогласование камеры
         \item Выбрана $\mathrm{otsu\_gap}$~--- разрыв средних яркостей классов Оцу: \emph{не зависит от выравнивания}, $\rho = 0{,}94\ldots1{,}00$ на всех сериях
       \end{itemize}
-      \vspace{1mm}
       \begin{block}{}
         $\mathrm{otsu\_gap} = |\mu_1(t^{*}) - \mu_0(t^{*})|$~--- насколько разделены тёмная и светлая популяции пикселей.
       \end{block}
     \end{column}
     \begin{column}{0.43\textwidth}
       \centering
-      \includegraphics[width=\textwidth]{figures/raw_photos/roi_overlay.jpg}\\
+      \includegraphics[width=0.92\textwidth]{figures/raw_photos/roi_overlay.jpg}\\
       \src{Кадр камеры: ROI панели и белый калибровочный квадрат}
     \end{column}
   \end{columns}
@@ -275,13 +287,14 @@
       \src{Энергия и латентность линейны по числу кадров $N$}
     \end{column}
     \begin{column}{0.46\textwidth}
-      \vspace{2mm}
-      $$E(N) = 1{,}82 + 0{,}088\,N \;\;\text{мДж} \quad (R^2{=}0{,}996)$$
-      $$\tau(N) = 0{,}27 + 0{,}020\,N \;\;\text{с} \quad (R^2{=}1{,}000)$$
-      \vspace{-2mm}
+      \small
+      \[ E(N) = 1{,}82 + 0{,}088\,N \;\text{мДж} \;\; (R^2{=}0{,}996) \]
+      \vspace{-5mm}
+      \[ \tau(N) = 0{,}27 + 0{,}020\,N \;\text{с} \;\; (R^2{=}1{,}000) \]
+      \vspace{-3mm}
       \begin{itemize}
-        \item Частота кадров из наклона: $f = 50{,}1$~Гц~--- совпала с допущением модели (независимое подтверждение)
-        \item Контраст: насыщающаяся модель по фазам $T_c, T_{\mathrm{osc}}, T_d$ ($R^2{=}0{,}978$); осцилляция вчетверо менее эффективна, чем финальный драйв
+        \item Частота кадров из наклона: $f = 50{,}1$~Гц~--- совпала с допущением модели
+        \item Контраст: насыщающаяся модель по фазам ($R^2{=}0{,}978$); осцилляция вчетверо слабее финального драйва
         \item У заводской полной waveform \alert{74\,\% кадров~--- осцилляция}: главный резерв экономии
       \end{itemize}
     \end{column}
@@ -322,13 +335,13 @@
 % ---------- 12. Сценарии ----------
 \begin{frame}{Проверка на реалистичном контенте}
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/raw_photos/scenarios_panels.png}\\[1mm]
+  \includegraphics[width=0.58\textwidth]{figures/raw_photos/scenarios_panels.png}\\[1mm]
   \src{Часы, онлайн-табло, страница читалки: наш оптимум против заводского режима}
-  \vspace{2mm}
+  \vspace{1mm}
   \begin{itemize}
     \item Визуально неотличимо от заводского полного обновления при вдвое меньшей энергии
-    \item Переключение контента без промежуточной очистки: остаточный след $<1{,}5\,\%$ у обоих~--- экономия не ухудшает ghosting
-    \item Циклический тест (8 обновлений подряд): накопления гостинга нет (0{,}099 против 0{,}105 у заводской)
+    \item Переключение контента без очистки: остаточный след $<1{,}5\,\%$ у обоих~--- экономия не ухудшает ghosting
+    \item Циклический тест (8 обновлений): накопления гостинга нет (0{,}099 против 0{,}105 у заводской)
   \end{itemize}
 \end{frame}
 
@@ -367,7 +380,7 @@
       \end{itemize}
       \vspace{1mm}
       \centering
-      \includegraphics[width=0.92\textwidth]{figures/raw_photos/pong_frames.png}\\
+      \includegraphics[width=0.50\textwidth]{figures/raw_photos/pong_frames.png}\\
       \src{Кадры авто-игры на панели}
     \end{column}
   \end{columns}

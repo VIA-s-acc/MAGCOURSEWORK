@@ -6,7 +6,7 @@
 эмпирически (scripts/eval_metrics.py) по монотонности на свипе известного
 качества и применимости к мелкому контенту.
 
-Все функции принимают reflectance [0,1] (PANEL_H×PANEL_W); часть~--- ещё и target.
+Все функции принимают reflectance [0,1] (PANEL_H×PANEL_W); часть — ещё и target.
 """
 from __future__ import annotations
 

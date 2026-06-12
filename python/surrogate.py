@@ -216,32 +216,27 @@ class SurrogateModel:
     # ---- Round-trip validation ------------------------------------------
 
     def evaluate_mae(self, sim: PixelOdeSim, test_waveforms: list[Waveform]) -> dict[str, float]:
-        """Сравнить surrogate.predict() с прямым прогоном ode_sim — для cross-validation.
+        """MAE смещения reflectance между surrogate и прямым прогоном ode_sim.
 
-        Возвращает {"mae_E_mJ": ..., "mae_dz": ...}.
+        Энергия в обеих ветках — одна и та же аналитика, поэтому валидируется
+        только смещение (δz), где surrogate использует интерполяцию таблицы, а
+        ode_sim интегрирует ОДУ.
         """
         if not test_waveforms:
             raise ValueError("test_waveforms must be non-empty")
 
-        e_err: list[float] = []
         z_err: list[float] = []
         rho_min = self.z_clip[0]
-
         for wf in test_waveforms:
-            E_surr, _, _ = self.predict(wf, rho_min, rho_min)
             sol = sim.replay_lut(
                 u_seq=[(V, T / wf.f_frame) for V, T in zip(wf.voltages, wf.durations)],
                 x0=0.0,
             )
             z_true = float(sol["rho"][-1])
-            # Энергия истинная (Lin) — упрощённо: пересчёт по тем же параметрам.
-            E_true = E_surr  # E у нас аналитика, surrogate воспроизводит её точно
-            e_err.append(abs(E_surr - E_true))
-            z_err.append(abs(rho_min + sum(  # surrogate-сумма δz vs ode_sim
-                float(self._dz_interp([[V, float(T), rho_min]])[0]) for V, T in zip(wf.voltages, wf.durations)
-            ) - z_true))
+            z_surr = rho_min + sum(
+                float(self._dz_interp([[V, float(T), rho_min]])[0])
+                for V, T in zip(wf.voltages, wf.durations)
+            )
+            z_err.append(abs(z_surr - z_true))
 
-        return {
-            "mae_E_mJ": float(np.mean(e_err)),
-            "mae_dz": float(np.mean(z_err)),
-        }
+        return {"mae_dz": float(np.mean(z_err))}

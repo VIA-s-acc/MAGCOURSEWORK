@@ -33,11 +33,9 @@ def to_float01(img: np.ndarray) -> np.ndarray:
     if np.issubdtype(img.dtype, np.integer):
         info = np.iinfo(img.dtype)
         return img.astype(np.float64) / float(info.max)
-    arr = img.astype(np.float64)
-    if arr.max() > 1.0 + 1e-9:
-        # Похоже, не нормализовано — нормируем по max.
-        arr = arr / arr.max()
-    return arr
+    # float reflectance ожидается уже в [0,1]; клипуем, а не нормируем по max
+    # (нормировка по своему max сделала бы два кадра несравнимыми между собой).
+    return np.clip(img.astype(np.float64), 0.0, 1.0)
 
 
 def residual(img_actual: np.ndarray, img_target: np.ndarray) -> float:

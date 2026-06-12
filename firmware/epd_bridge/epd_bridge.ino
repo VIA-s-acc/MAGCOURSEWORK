@@ -569,7 +569,6 @@ void dispatch(uint8_t opcode) {
                 epd_send_command(0x20);
 
                 // Семплируем INA219 пока BUSY=1.
-                uint32_t t0 = micros();
                 uint32_t deadline = millis() + BUSY_TIMEOUT_MS;
                 while (digitalRead(PIN_BUSY) == HIGH) {
                     if (millis() > deadline) {
@@ -583,10 +582,7 @@ void dispatch(uint8_t opcode) {
                         bench_buf[total_samples].p_raw = r.power_raw;
                         total_samples++;
                     }
-                    // INA219 в config 0x199F даёт ~300 Гц (8-sample avg).
-                    // delayMicroseconds(0) — отдадим scheduler'у только если нужно.
                 }
-                (void)t0;
             }
 
             // Ответ
